@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      beneficiaries: {
+        Row: {
+          age_or_range: string | null
+          beneficiary_code: string
+          consent_status: Database["public"]["Enums"]["beneficiary_consent_status"]
+          created_at: string | null
+          id: string
+          location: string | null
+          name_or_label: string
+          notes: string | null
+          project_id: string
+          sex: Database["public"]["Enums"]["beneficiary_sex"] | null
+          type: Database["public"]["Enums"]["beneficiary_type"]
+          updated_at: string | null
+          vulnerability_tags: string[] | null
+        }
+        Insert: {
+          age_or_range?: string | null
+          beneficiary_code: string
+          consent_status: Database["public"]["Enums"]["beneficiary_consent_status"]
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name_or_label: string
+          notes?: string | null
+          project_id: string
+          sex?: Database["public"]["Enums"]["beneficiary_sex"] | null
+          type: Database["public"]["Enums"]["beneficiary_type"]
+          updated_at?: string | null
+          vulnerability_tags?: string[] | null
+        }
+        Update: {
+          age_or_range?: string | null
+          beneficiary_code?: string
+          consent_status?: Database["public"]["Enums"]["beneficiary_consent_status"]
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name_or_label?: string
+          notes?: string | null
+          project_id?: string
+          sex?: Database["public"]["Enums"]["beneficiary_sex"] | null
+          type?: Database["public"]["Enums"]["beneficiary_type"]
+          updated_at?: string | null
+          vulnerability_tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beneficiaries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence: {
         Row: {
           created_at: string | null
@@ -294,6 +350,184 @@ export type Database = {
           },
         ]
       }
+      lessons_learned: {
+        Row: {
+          applicability_scope: Database["public"]["Enums"]["lesson_learned_applicability"]
+          category: Database["public"]["Enums"]["lesson_learned_category"]
+          created_at: string | null
+          date: string
+          description: string
+          evidence_link: string | null
+          id: string
+          project_id: string
+          recommendation: string | null
+          status: Database["public"]["Enums"]["lesson_learned_status"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          applicability_scope: Database["public"]["Enums"]["lesson_learned_applicability"]
+          category: Database["public"]["Enums"]["lesson_learned_category"]
+          created_at?: string | null
+          date: string
+          description: string
+          evidence_link?: string | null
+          id?: string
+          project_id: string
+          recommendation?: string | null
+          status?: Database["public"]["Enums"]["lesson_learned_status"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          applicability_scope?: Database["public"]["Enums"]["lesson_learned_applicability"]
+          category?: Database["public"]["Enums"]["lesson_learned_category"]
+          created_at?: string | null
+          date?: string
+          description?: string
+          evidence_link?: string | null
+          id?: string
+          project_id?: string
+          recommendation?: string | null
+          status?: Database["public"]["Enums"]["lesson_learned_status"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_learned_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_deliveries: {
+        Row: {
+          beneficiary_group: string | null
+          created_at: string | null
+          delivered_qty: number
+          delivery_date_actual: string | null
+          delivery_date_planned: string | null
+          evidence_files: Json | null
+          id: string
+          item_name: string
+          location: string | null
+          notes: string | null
+          planned_qty: number
+          project_id: string
+          salesforce_id: string | null
+          status: Database["public"]["Enums"]["meal_delivery_status"]
+          unit: Database["public"]["Enums"]["meal_delivery_unit"]
+          updated_at: string | null
+          workstream_id: string | null
+        }
+        Insert: {
+          beneficiary_group?: string | null
+          created_at?: string | null
+          delivered_qty?: number
+          delivery_date_actual?: string | null
+          delivery_date_planned?: string | null
+          evidence_files?: Json | null
+          id?: string
+          item_name: string
+          location?: string | null
+          notes?: string | null
+          planned_qty: number
+          project_id: string
+          salesforce_id?: string | null
+          status?: Database["public"]["Enums"]["meal_delivery_status"]
+          unit?: Database["public"]["Enums"]["meal_delivery_unit"]
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Update: {
+          beneficiary_group?: string | null
+          created_at?: string | null
+          delivered_qty?: number
+          delivery_date_actual?: string | null
+          delivery_date_planned?: string | null
+          evidence_files?: Json | null
+          id?: string
+          item_name?: string
+          location?: string | null
+          notes?: string | null
+          planned_qty?: number
+          project_id?: string
+          salesforce_id?: string | null
+          status?: Database["public"]["Enums"]["meal_delivery_status"]
+          unit?: Database["public"]["Enums"]["meal_delivery_unit"]
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_deliveries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_deliveries_workstream_id_fkey"
+            columns: ["workstream_id"]
+            isOneToOne: false
+            referencedRelation: "workstreams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_plans: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["meal_plan_approval_status"]
+          collection_calendar: string | null
+          created_at: string | null
+          data_quality_procedures: string | null
+          id: string
+          indicators_json: Json | null
+          last_review_at: string | null
+          project_id: string
+          responsibilities_raci: string | null
+          theory_of_change_link: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["meal_plan_approval_status"]
+          collection_calendar?: string | null
+          created_at?: string | null
+          data_quality_procedures?: string | null
+          id?: string
+          indicators_json?: Json | null
+          last_review_at?: string | null
+          project_id: string
+          responsibilities_raci?: string | null
+          theory_of_change_link?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["meal_plan_approval_status"]
+          collection_calendar?: string | null
+          created_at?: string | null
+          data_quality_procedures?: string | null
+          id?: string
+          indicators_json?: Json | null
+          last_review_at?: string | null
+          project_id?: string
+          responsibilities_raci?: string | null
+          theory_of_change_link?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       programs: {
         Row: {
           code: string
@@ -398,6 +632,65 @@ export type Database = {
           },
         ]
       }
+      quarterly_reports: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["quarterly_report_approval_status"]
+          attachments: Json | null
+          created_at: string | null
+          deliveries_summary: string | null
+          finance_linkage_notes: string | null
+          fiscal_year: number
+          id: string
+          indicators_progress_json: Json | null
+          period: Database["public"]["Enums"]["quarterly_report_period"]
+          project_id: string
+          risk_flags:
+            | Database["public"]["Enums"]["quarterly_report_risk_flag"][]
+            | null
+          updated_at: string | null
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["quarterly_report_approval_status"]
+          attachments?: Json | null
+          created_at?: string | null
+          deliveries_summary?: string | null
+          finance_linkage_notes?: string | null
+          fiscal_year: number
+          id?: string
+          indicators_progress_json?: Json | null
+          period: Database["public"]["Enums"]["quarterly_report_period"]
+          project_id: string
+          risk_flags?:
+            | Database["public"]["Enums"]["quarterly_report_risk_flag"][]
+            | null
+          updated_at?: string | null
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["quarterly_report_approval_status"]
+          attachments?: Json | null
+          created_at?: string | null
+          deliveries_summary?: string | null
+          finance_linkage_notes?: string | null
+          fiscal_year?: number
+          id?: string
+          indicators_progress_json?: Json | null
+          period?: Database["public"]["Enums"]["quarterly_report_period"]
+          project_id?: string
+          risk_flags?:
+            | Database["public"]["Enums"]["quarterly_report_risk_flag"][]
+            | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quarterly_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workstreams: {
         Row: {
           category: Database["public"]["Enums"]["workstream_category"] | null
@@ -450,10 +743,42 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      beneficiary_consent_status: "Obtained" | "Pending" | "Not Required"
+      beneficiary_sex: "F" | "M" | "Outro" | "ND"
+      beneficiary_type:
+        | "Pessoa"
+        | "Família"
+        | "Escola"
+        | "Comunidade"
+        | "Associação"
       import_status: "pending" | "processing" | "completed" | "failed"
       invoice_status: "received" | "approved" | "paid" | "archived"
+      lesson_learned_applicability: "Projeto" | "Programa" | "Portfólio"
+      lesson_learned_category:
+        | "Operação"
+        | "MEAL"
+        | "Financeiro"
+        | "Parcerias"
+        | "Risco"
+        | "Compliance"
+      lesson_learned_status:
+        | "Captured"
+        | "Validated"
+        | "Disseminated"
+        | "Actioned"
+      meal_delivery_status: "Planned" | "In-Progress" | "Delivered" | "Blocked"
+      meal_delivery_unit: "un" | "kg" | "kit" | "caixa" | "outro"
+      meal_plan_approval_status: "Draft" | "Under Review" | "Approved"
       project_health: "green" | "yellow" | "red"
       project_status: "planning" | "execution" | "closing" | "closed"
+      quarterly_report_approval_status: "Draft" | "Under Review" | "Approved"
+      quarterly_report_period: "Q1" | "Q2" | "Q3" | "Q4"
+      quarterly_report_risk_flag:
+        | "schedule"
+        | "cost"
+        | "scope"
+        | "compliance"
+        | "quality"
       workstream_category:
         | "governance"
         | "meal"
@@ -587,10 +912,46 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      beneficiary_consent_status: ["Obtained", "Pending", "Not Required"],
+      beneficiary_sex: ["F", "M", "Outro", "ND"],
+      beneficiary_type: [
+        "Pessoa",
+        "Família",
+        "Escola",
+        "Comunidade",
+        "Associação",
+      ],
       import_status: ["pending", "processing", "completed", "failed"],
       invoice_status: ["received", "approved", "paid", "archived"],
+      lesson_learned_applicability: ["Projeto", "Programa", "Portfólio"],
+      lesson_learned_category: [
+        "Operação",
+        "MEAL",
+        "Financeiro",
+        "Parcerias",
+        "Risco",
+        "Compliance",
+      ],
+      lesson_learned_status: [
+        "Captured",
+        "Validated",
+        "Disseminated",
+        "Actioned",
+      ],
+      meal_delivery_status: ["Planned", "In-Progress", "Delivered", "Blocked"],
+      meal_delivery_unit: ["un", "kg", "kit", "caixa", "outro"],
+      meal_plan_approval_status: ["Draft", "Under Review", "Approved"],
       project_health: ["green", "yellow", "red"],
       project_status: ["planning", "execution", "closing", "closed"],
+      quarterly_report_approval_status: ["Draft", "Under Review", "Approved"],
+      quarterly_report_period: ["Q1", "Q2", "Q3", "Q4"],
+      quarterly_report_risk_flag: [
+        "schedule",
+        "cost",
+        "scope",
+        "compliance",
+        "quality",
+      ],
       workstream_category: [
         "governance",
         "meal",
