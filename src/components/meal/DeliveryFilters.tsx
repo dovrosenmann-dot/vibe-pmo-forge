@@ -36,7 +36,7 @@ export function DeliveryFilters({ filters, onFiltersChange, projectId }: Deliver
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             {workstreams?.map((ws) => (
               <SelectItem key={ws.id} value={ws.id}>
                 {ws.name}
@@ -56,7 +56,7 @@ export function DeliveryFilters({ filters, onFiltersChange, projectId }: Deliver
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="Planned">Planned</SelectItem>
             <SelectItem value="In-Progress">In-Progress</SelectItem>
             <SelectItem value="Delivered">Delivered</SelectItem>

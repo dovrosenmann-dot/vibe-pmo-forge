@@ -14,13 +14,13 @@ export function useMealDeliveries(projectId?: string, filters?: any) {
         query = query.eq("project_id", projectId);
       }
 
-      if (filters?.workstreamId) {
-        query = query.eq("workstream_id", filters.workstreamId);
-      }
+    if (filters?.workstreamId && filters.workstreamId !== "all") {
+      query = query.eq("workstream_id", filters.workstreamId);
+    }
 
-      if (filters?.status) {
-        query = query.eq("status", filters.status);
-      }
+    if (filters?.status && filters.status !== "all") {
+      query = query.eq("status", filters.status);
+    }
 
       if (filters?.dateFrom) {
         query = query.gte("delivery_date_planned", filters.dateFrom);
