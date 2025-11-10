@@ -18,7 +18,7 @@ export default function Meal() {
         <TabsList>
           <TabsTrigger value="deliveries" className="gap-2">
             <Package className="w-4 h-4" />
-            Entregas de Salgados
+            Entregas
           </TabsTrigger>
           <TabsTrigger value="plan" className="gap-2">
             <ClipboardList className="w-4 h-4" />
