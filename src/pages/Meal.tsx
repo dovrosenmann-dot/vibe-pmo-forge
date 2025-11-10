@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { DeliveriesTab } from "@/components/meal/DeliveriesTab";
+import { MealPlanTab } from "@/components/meal/MealPlanTab";
 import { Package, ClipboardList, Users, FileText, Lightbulb } from "lucide-react";
 
 export default function Meal() {
@@ -43,9 +44,7 @@ export default function Meal() {
         </TabsContent>
 
         <TabsContent value="plan">
-          <div className="text-center py-12 text-muted-foreground">
-            Plano de M&A em desenvolvimento...
-          </div>
+          <MealPlanTab projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="beneficiaries">
