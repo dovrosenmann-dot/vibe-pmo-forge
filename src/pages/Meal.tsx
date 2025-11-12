@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { DeliveriesTab } from "@/components/meal/DeliveriesTab";
 import { MealPlanTab } from "@/components/meal/MealPlanTab";
+import { BeneficiariesTab } from "@/components/meal/BeneficiariesTab";
 import { Package, ClipboardList, Users, FileText, Lightbulb } from "lucide-react";
 
 export default function Meal() {
@@ -48,9 +49,7 @@ export default function Meal() {
         </TabsContent>
 
         <TabsContent value="beneficiaries">
-          <div className="text-center py-12 text-muted-foreground">
-            Cadastro de Beneficiários em desenvolvimento...
-          </div>
+          <BeneficiariesTab projectId={projectId || ""} />
         </TabsContent>
 
         <TabsContent value="reports">
