@@ -528,6 +528,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          job_title: string | null
+          organization: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          job_title?: string | null
+          organization?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          job_title?: string | null
+          organization?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       programs: {
         Row: {
           code: string
@@ -691,6 +724,56 @@ export type Database = {
           },
         ]
       }
+      user_project_access: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_project_access_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       workstreams: {
         Row: {
           category: Database["public"]["Enums"]["workstream_category"] | null
@@ -740,9 +823,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_project: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role:
+        | "admin"
+        | "pmo"
+        | "project_manager"
+        | "finance"
+        | "meal_coordinator"
+        | "viewer"
+        | "donor"
       beneficiary_consent_status: "Obtained" | "Pending" | "Not Required"
       beneficiary_sex: "F" | "M" | "Outro" | "ND"
       beneficiary_type:
@@ -912,6 +1013,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "admin",
+        "pmo",
+        "project_manager",
+        "finance",
+        "meal_coordinator",
+        "viewer",
+        "donor",
+      ],
       beneficiary_consent_status: ["Obtained", "Pending", "Not Required"],
       beneficiary_sex: ["F", "M", "Outro", "ND"],
       beneficiary_type: [

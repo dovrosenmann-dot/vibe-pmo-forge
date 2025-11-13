@@ -1,7 +1,22 @@
-import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Users, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Users, FileText, Settings, LogOut } from "lucide-react";
 import { NavLink } from "./NavLink";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export const Sidebar = () => {
+  const { profile, user, signOut } = useAuth();
+  
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const navItems = [
     { to: "/", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/projects", icon: FolderKanban, label: "Portfolio" },
@@ -37,16 +52,32 @@ export const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-2">
         <div className="flex items-center gap-3 px-4 py-2">
-          <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-sm font-medium text-sidebar-accent-foreground">PM</span>
-          </div>
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={profile?.avatar_url || undefined} />
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-sm">
+              {getInitials(profile?.full_name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">PMO Manager</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">pmo@earthworm.org</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              {profile?.full_name || user?.email?.split("@")[0]}
+            </p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">
+              {user?.email}
+            </p>
           </div>
         </div>
+        <Button
+          onClick={signOut}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+        >
+          <LogOut className="w-4 h-4" />
+          Sair
+        </Button>
       </div>
     </aside>
   );
