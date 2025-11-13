@@ -1,11 +1,13 @@
-import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Users, FileText, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Users, FileText, Settings, LogOut, Shield } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoles } from "@/hooks/useRoles";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export const Sidebar = () => {
   const { profile, user, signOut } = useAuth();
+  const { isAdmin } = useRoles();
   
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "U";
@@ -26,6 +28,10 @@ export const Sidebar = () => {
     { to: "/suppliers", icon: Users, label: "Suppliers" },
     { to: "/reports", icon: FileText, label: "Reports" },
     { to: "/settings", icon: Settings, label: "Settings" },
+  ];
+
+  const adminNavItems = [
+    { to: "/admin", icon: Shield, label: "Administração" },
   ];
 
   return (
@@ -50,6 +56,26 @@ export const Sidebar = () => {
             </li>
           ))}
         </ul>
+
+        {isAdmin && (
+          <>
+            <div className="my-4 border-t border-sidebar-border" />
+            <ul className="space-y-1">
+              {adminNavItems.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </nav>
 
       <div className="p-4 border-t border-sidebar-border space-y-2">
