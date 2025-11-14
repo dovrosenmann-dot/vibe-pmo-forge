@@ -48,6 +48,35 @@ export const useProjectAccess = (userId?: string) => {
         .insert({ user_id: userId, project_id: projectId });
 
       if (error) throw error;
+
+      // Buscar informações do projeto e usuário para enviar email
+      const project = allProjects?.find(p => p.id === projectId);
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .eq("user_id", userId)
+        .single();
+
+      if (profile) {
+        const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+        
+        if (user?.email && project) {
+          try {
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                to: user.email,
+                userName: profile.full_name || user.email,
+                notificationType: "project_access",
+                projectName: project.name,
+                projectCode: project.code,
+              },
+            });
+          } catch (emailError) {
+            console.error("Erro ao enviar email de notificação:", emailError);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-project-access"] });
