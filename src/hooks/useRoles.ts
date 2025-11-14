@@ -83,6 +83,23 @@ export const useRoles = () => {
         .insert({ user_id: userId, role });
 
       if (error) throw error;
+
+      // Buscar informações do usuário para enviar email
+      const user = users?.find(u => u.id === userId);
+      if (user?.email) {
+        try {
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              to: user.email,
+              userName: user.full_name || user.email,
+              notificationType: "role",
+              roleName: role,
+            },
+          });
+        } catch (emailError) {
+          console.error("Erro ao enviar email de notificação:", emailError);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
