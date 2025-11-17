@@ -70,6 +70,69 @@ export type Database = {
           },
         ]
       }
+      budget_allocations: {
+        Row: {
+          allocated_amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          committed_amount: number
+          created_at: string | null
+          currency: string
+          fiscal_year: number
+          id: string
+          notes: string | null
+          project_id: string
+          quarter: number | null
+          spent_amount: number
+          updated_at: string | null
+          workstream_id: string | null
+        }
+        Insert: {
+          allocated_amount?: number
+          category: Database["public"]["Enums"]["expense_category"]
+          committed_amount?: number
+          created_at?: string | null
+          currency?: string
+          fiscal_year: number
+          id?: string
+          notes?: string | null
+          project_id: string
+          quarter?: number | null
+          spent_amount?: number
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Update: {
+          allocated_amount?: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          committed_amount?: number
+          created_at?: string | null
+          currency?: string
+          fiscal_year?: number
+          id?: string
+          notes?: string | null
+          project_id?: string
+          quarter?: number | null
+          spent_amount?: number
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_allocations_workstream_id_fkey"
+            columns: ["workstream_id"]
+            isOneToOne: false
+            referencedRelation: "workstreams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence: {
         Row: {
           created_at: string | null
@@ -114,12 +177,16 @@ export type Database = {
       expenses: {
         Row: {
           amount: number
+          approval_status: string | null
+          budget_allocation_id: string | null
+          category: Database["public"]["Enums"]["expense_category"] | null
           cost_category: string
           created_at: string | null
           currency: string | null
           date: string
           description: string | null
           grant_code: string | null
+          grant_id: string | null
           id: string
           invoice_no: string | null
           project_id: string | null
@@ -128,12 +195,16 @@ export type Database = {
         }
         Insert: {
           amount: number
+          approval_status?: string | null
+          budget_allocation_id?: string | null
+          category?: Database["public"]["Enums"]["expense_category"] | null
           cost_category: string
           created_at?: string | null
           currency?: string | null
           date: string
           description?: string | null
           grant_code?: string | null
+          grant_id?: string | null
           id?: string
           invoice_no?: string | null
           project_id?: string | null
@@ -142,12 +213,16 @@ export type Database = {
         }
         Update: {
           amount?: number
+          approval_status?: string | null
+          budget_allocation_id?: string | null
+          category?: Database["public"]["Enums"]["expense_category"] | null
           cost_category?: string
           created_at?: string | null
           currency?: string | null
           date?: string
           description?: string | null
           grant_code?: string | null
+          grant_id?: string | null
           id?: string
           invoice_no?: string | null
           project_id?: string | null
@@ -156,7 +231,182 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "expenses_budget_allocation_id_fkey"
+            columns: ["budget_allocation_id"]
+            isOneToOne: false
+            referencedRelation: "budget_allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "grants"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: Database["public"]["Enums"]["expense_category"] | null
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          description: string
+          expense_id: string | null
+          grant_id: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          project_id: string
+          reference_number: string | null
+          transaction_date: string
+          transaction_type: string
+          updated_at: string | null
+          workstream_id: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"] | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          description: string
+          expense_id?: string | null
+          grant_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          project_id: string
+          reference_number?: string | null
+          transaction_date: string
+          transaction_type: string
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"] | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          description?: string
+          expense_id?: string | null
+          grant_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          project_id?: string
+          reference_number?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string | null
+          workstream_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "grants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_workstream_id_fkey"
+            columns: ["workstream_id"]
+            isOneToOne: false
+            referencedRelation: "workstreams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grants: {
+        Row: {
+          created_at: string | null
+          currency: string
+          disbursed_amount: number
+          donor_name: string
+          end_date: string
+          grant_code: string
+          id: string
+          project_id: string
+          reporting_requirements: string | null
+          restrictions: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["grant_status"]
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          disbursed_amount?: number
+          donor_name: string
+          end_date: string
+          grant_code: string
+          id?: string
+          project_id: string
+          reporting_requirements?: string | null
+          restrictions?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["grant_status"]
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          disbursed_amount?: number
+          donor_name?: string
+          end_date?: string
+          grant_code?: string
+          id?: string
+          project_id?: string
+          reporting_requirements?: string | null
+          restrictions?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["grant_status"]
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grants_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -852,6 +1102,21 @@ export type Database = {
         | "Escola"
         | "Comunidade"
         | "Associação"
+      expense_category:
+        | "personnel"
+        | "travel"
+        | "equipment"
+        | "supplies"
+        | "services"
+        | "infrastructure"
+        | "overhead"
+        | "other"
+      grant_status:
+        | "pending"
+        | "approved"
+        | "disbursed"
+        | "completed"
+        | "cancelled"
       import_status: "pending" | "processing" | "completed" | "failed"
       invoice_status: "received" | "approved" | "paid" | "archived"
       lesson_learned_applicability: "Projeto" | "Programa" | "Portfólio"
@@ -1030,6 +1295,23 @@ export const Constants = {
         "Escola",
         "Comunidade",
         "Associação",
+      ],
+      expense_category: [
+        "personnel",
+        "travel",
+        "equipment",
+        "supplies",
+        "services",
+        "infrastructure",
+        "overhead",
+        "other",
+      ],
+      grant_status: [
+        "pending",
+        "approved",
+        "disbursed",
+        "completed",
+        "cancelled",
       ],
       import_status: ["pending", "processing", "completed", "failed"],
       invoice_status: ["received", "approved", "paid", "archived"],
