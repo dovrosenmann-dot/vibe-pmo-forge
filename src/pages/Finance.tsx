@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,22 +14,53 @@ import { GrantForm } from "@/components/finance/GrantForm";
 import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm";
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { FinanceCharts } from "@/components/finance/FinanceCharts";
+import { FinanceFilters } from "@/components/finance/FinanceFilters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Finance() {
-  const [selectedProject] = useState("mock-project-id");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [allocationDialogOpen, setAllocationDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
 
-  const { grants, isLoading: grantsLoading, createGrant } = useGrants(selectedProject);
-  const { allocations, isLoading: allocationsLoading, createAllocation } = useBudgetAllocations(selectedProject);
-  const { transactions, isLoading: transactionsLoading, createTransaction } = useFinancialTransactions(selectedProject);
+  const { grants, isLoading: grantsLoading, createGrant } = useGrants(selectedProjectId);
+  const { allocations, isLoading: allocationsLoading, createAllocation } = useBudgetAllocations(selectedProjectId);
+  const { transactions, isLoading: transactionsLoading, createTransaction } = useFinancialTransactions(
+    selectedProjectId,
+    {
+      dateFrom: dateFrom?.toISOString().split('T')[0],
+      dateTo: dateTo?.toISOString().split('T')[0],
+    }
+  );
 
-  const totalGrantAmount = grants?.reduce((sum, g) => sum + g.total_amount, 0) || 0;
-  const totalAllocated = allocations?.reduce((sum, a) => sum + a.allocated_amount, 0) || 0;
-  const totalSpent = allocations?.reduce((sum, a) => sum + a.spent_amount, 0) || 0;
+  // Filter grants by date range
+  const filteredGrants = useMemo(() => {
+    if (!grants) return [];
+    return grants.filter((grant) => {
+      if (dateFrom && new Date(grant.start_date) < dateFrom) return false;
+      if (dateTo && new Date(grant.end_date) > dateTo) return false;
+      return true;
+    });
+  }, [grants, dateFrom, dateTo]);
+
+  // Filter allocations by fiscal year based on date range
+  const filteredAllocations = useMemo(() => {
+    if (!allocations) return [];
+    if (!dateFrom && !dateTo) return allocations;
+    return allocations.filter((allocation) => {
+      const year = allocation.fiscal_year;
+      if (dateFrom && year < dateFrom.getFullYear()) return false;
+      if (dateTo && year > dateTo.getFullYear()) return false;
+      return true;
+    });
+  }, [allocations, dateFrom, dateTo]);
+
+  const totalGrantAmount = filteredGrants.reduce((sum, g) => sum + g.total_amount, 0);
+  const totalAllocated = filteredAllocations.reduce((sum, a) => sum + a.allocated_amount, 0);
+  const totalSpent = filteredAllocations.reduce((sum, a) => sum + a.spent_amount, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,6 +70,17 @@ export default function Finance() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Gestão Financeira</h1>
           <p className="text-muted-foreground">Gerencie orçamentos, grants e transações</p>
+        </div>
+
+        <div className="mb-6">
+          <FinanceFilters
+            selectedProjectId={selectedProjectId}
+            onProjectChange={setSelectedProjectId}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3 mb-6">
@@ -79,9 +121,9 @@ export default function Finance() {
         </div>
 
         <FinanceCharts 
-          allocations={allocations || []} 
+          allocations={filteredAllocations} 
           transactions={transactions || []} 
-          grants={grants || []} 
+          grants={filteredGrants} 
         />
 
         <Tabs defaultValue="grants" className="space-y-4">
@@ -111,7 +153,7 @@ export default function Finance() {
                         <DialogTitle>Criar Novo Grant</DialogTitle>
                       </DialogHeader>
                       <GrantForm
-                        projectId={selectedProject}
+                        projectId={selectedProjectId || ""}
                         onSuccess={() => setGrantDialogOpen(false)}
                         onSubmit={(data) => createGrant.mutate(data)}
                       />
@@ -134,7 +176,7 @@ export default function Finance() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {grants?.map((grant) => (
+                      {filteredGrants.map((grant) => (
                         <TableRow key={grant.id}>
                           <TableCell className="font-medium">{grant.grant_code}</TableCell>
                           <TableCell>{grant.donor_name}</TableCell>
@@ -176,7 +218,7 @@ export default function Finance() {
                         <DialogTitle>Criar Nova Alocação</DialogTitle>
                       </DialogHeader>
                       <BudgetAllocationForm
-                        projectId={selectedProject}
+                        projectId={selectedProjectId || ""}
                         onSuccess={() => setAllocationDialogOpen(false)}
                         onSubmit={(data) => createAllocation.mutate(data)}
                       />
@@ -199,7 +241,7 @@ export default function Finance() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {allocations?.map((allocation) => (
+                      {filteredAllocations.map((allocation) => (
                         <TableRow key={allocation.id}>
                           <TableCell className="font-medium capitalize">{allocation.category}</TableCell>
                           <TableCell>
@@ -240,7 +282,7 @@ export default function Finance() {
                         <DialogTitle>Criar Nova Transação</DialogTitle>
                       </DialogHeader>
                       <TransactionForm
-                        projectId={selectedProject}
+                        projectId={selectedProjectId || ""}
                         onSuccess={() => setTransactionDialogOpen(false)}
                         onSubmit={(data) => createTransaction.mutate(data)}
                       />
