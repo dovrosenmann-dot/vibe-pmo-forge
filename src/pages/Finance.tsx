@@ -15,6 +15,7 @@ import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm"
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { FinanceCharts } from "@/components/finance/FinanceCharts";
 import { FinanceFilters } from "@/components/finance/FinanceFilters";
+import { FinanceExport } from "@/components/finance/FinanceExport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -72,7 +73,7 @@ export default function Finance() {
           <p className="text-muted-foreground">Gerencie orçamentos, grants e transações</p>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 flex items-end justify-between gap-4">
           <FinanceFilters
             selectedProjectId={selectedProjectId}
             onProjectChange={setSelectedProjectId}
@@ -80,6 +81,13 @@ export default function Finance() {
             dateTo={dateTo}
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
+          />
+          <FinanceExport
+            grants={filteredGrants}
+            allocations={filteredAllocations}
+            transactions={transactions || []}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
           />
         </div>
 
