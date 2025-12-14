@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ExpenseCategory } from "./useBudgetAllocations";
 
 export type TransactionType = "income" | "expense" | "transfer" | "adjustment";
+export type TransactionApprovalStatus = "pending" | "approved" | "rejected";
 
 export interface FinancialTransaction {
   id: string;
@@ -22,6 +23,8 @@ export interface FinancialTransaction {
   created_by: string | null;
   approved_by: string | null;
   approved_at: string | null;
+  approval_status: TransactionApprovalStatus;
+  rejection_reason: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -31,6 +34,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
   type?: TransactionType;
   dateFrom?: string;
   dateTo?: string;
+  approvalStatus?: TransactionApprovalStatus;
 }) {
   const queryClient = useQueryClient();
 
@@ -58,6 +62,10 @@ export function useFinancialTransactions(projectId?: string, filters?: {
         query = query.lte("transaction_date", filters.dateTo);
       }
 
+      if (filters?.approvalStatus) {
+        query = query.eq("approval_status", filters.approvalStatus);
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data as FinancialTransaction[];
@@ -66,7 +74,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
   });
 
   const createTransaction = useMutation({
-    mutationFn: async (transaction: Omit<FinancialTransaction, "id" | "created_at" | "updated_at" | "created_by" | "approved_by" | "approved_at">) => {
+    mutationFn: async (transaction: Omit<FinancialTransaction, "id" | "created_at" | "updated_at" | "created_by" | "approved_by" | "approved_at" | "approval_status" | "rejection_reason">) => {
       const { data: { user } } = await supabase.auth.getUser();
       
       const { data, error } = await supabase
@@ -74,6 +82,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
         .insert({
           ...transaction,
           created_by: user?.id,
+          approval_status: "pending",
         })
         .select()
         .single();
@@ -120,6 +129,8 @@ export function useFinancialTransactions(projectId?: string, filters?: {
         .update({
           approved_by: user?.id,
           approved_at: new Date().toISOString(),
+          approval_status: "approved",
+          rejection_reason: null,
         })
         .eq("id", id)
         .select()
@@ -134,6 +145,34 @@ export function useFinancialTransactions(projectId?: string, filters?: {
     },
     onError: (error) => {
       toast.error("Erro ao aprovar transação: " + error.message);
+    },
+  });
+
+  const rejectTransaction = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase
+        .from("financial_transactions")
+        .update({
+          approved_by: user?.id,
+          approved_at: new Date().toISOString(),
+          approval_status: "rejected",
+          rejection_reason: reason,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["financial-transactions"] });
+      toast.success("Transação rejeitada");
+    },
+    onError: (error) => {
+      toast.error("Erro ao rejeitar transação: " + error.message);
     },
   });
 
@@ -161,6 +200,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
     createTransaction,
     updateTransaction,
     approveTransaction,
+    rejectTransaction,
     deleteTransaction,
   };
 }

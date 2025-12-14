@@ -256,6 +256,7 @@ export type Database = {
       financial_transactions: {
         Row: {
           amount: number
+          approval_status: Database["public"]["Enums"]["transaction_approval_status"]
           approved_at: string | null
           approved_by: string | null
           category: Database["public"]["Enums"]["expense_category"] | null
@@ -270,6 +271,7 @@ export type Database = {
           notes: string | null
           project_id: string
           reference_number: string | null
+          rejection_reason: string | null
           transaction_date: string
           transaction_type: string
           updated_at: string | null
@@ -277,6 +279,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          approval_status?: Database["public"]["Enums"]["transaction_approval_status"]
           approved_at?: string | null
           approved_by?: string | null
           category?: Database["public"]["Enums"]["expense_category"] | null
@@ -291,6 +294,7 @@ export type Database = {
           notes?: string | null
           project_id: string
           reference_number?: string | null
+          rejection_reason?: string | null
           transaction_date: string
           transaction_type: string
           updated_at?: string | null
@@ -298,6 +302,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          approval_status?: Database["public"]["Enums"]["transaction_approval_status"]
           approved_at?: string | null
           approved_by?: string | null
           category?: Database["public"]["Enums"]["expense_category"] | null
@@ -312,6 +317,7 @@ export type Database = {
           notes?: string | null
           project_id?: string
           reference_number?: string | null
+          rejection_reason?: string | null
           transaction_date?: string
           transaction_type?: string
           updated_at?: string | null
@@ -1145,6 +1151,7 @@ export type Database = {
         | "scope"
         | "compliance"
         | "quality"
+      transaction_approval_status: "pending" | "approved" | "rejected"
       workstream_category:
         | "governance"
         | "meal"
@@ -1344,6 +1351,7 @@ export const Constants = {
         "compliance",
         "quality",
       ],
+      transaction_approval_status: ["pending", "approved", "rejected"],
       workstream_category: [
         "governance",
         "meal",

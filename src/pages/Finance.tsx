@@ -10,6 +10,7 @@ import { Plus, DollarSign, TrendingUp, Wallet } from "lucide-react";
 import { useGrants } from "@/hooks/useGrants";
 import { useBudgetAllocations } from "@/hooks/useBudgetAllocations";
 import { useFinancialTransactions } from "@/hooks/useFinancialTransactions";
+import { TransactionApprovalActions, ApprovalStatusBadge } from "@/components/finance/TransactionApprovalActions";
 import { GrantForm } from "@/components/finance/GrantForm";
 import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm";
 import { TransactionForm } from "@/components/finance/TransactionForm";
@@ -29,7 +30,7 @@ export default function Finance() {
 
   const { grants, isLoading: grantsLoading, createGrant } = useGrants(selectedProjectId);
   const { allocations, isLoading: allocationsLoading, createAllocation } = useBudgetAllocations(selectedProjectId);
-  const { transactions, isLoading: transactionsLoading, createTransaction } = useFinancialTransactions(
+  const { transactions, isLoading: transactionsLoading, createTransaction, approveTransaction, rejectTransaction } = useFinancialTransactions(
     selectedProjectId,
     {
       dateFrom: dateFrom?.toISOString().split('T')[0],
@@ -309,7 +310,8 @@ export default function Finance() {
                         <TableHead>Tipo</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Valor</TableHead>
-                        <TableHead>Referência</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -327,7 +329,21 @@ export default function Finance() {
                           <TableCell className={transaction.transaction_type === "expense" ? "text-destructive" : "text-primary"}>
                             {transaction.currency} {transaction.amount.toLocaleString()}
                           </TableCell>
-                          <TableCell>{transaction.reference_number || "-"}</TableCell>
+                          <TableCell>
+                            <ApprovalStatusBadge 
+                              status={transaction.approval_status} 
+                              rejectionReason={transaction.rejection_reason}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TransactionApprovalActions
+                              transaction={transaction}
+                              onApprove={(id) => approveTransaction.mutate(id)}
+                              onReject={(id, reason) => rejectTransaction.mutate({ id, reason })}
+                              isApproving={approveTransaction.isPending}
+                              isRejecting={rejectTransaction.isPending}
+                            />
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
