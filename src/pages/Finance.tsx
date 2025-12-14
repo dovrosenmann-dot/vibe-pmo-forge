@@ -13,6 +13,7 @@ import { useFinancialTransactions } from "@/hooks/useFinancialTransactions";
 import { GrantForm } from "@/components/finance/GrantForm";
 import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm";
 import { TransactionForm } from "@/components/finance/TransactionForm";
+import { FinanceCharts } from "@/components/finance/FinanceCharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -76,6 +77,12 @@ export default function Finance() {
             </CardContent>
           </Card>
         </div>
+
+        <FinanceCharts 
+          allocations={allocations || []} 
+          transactions={transactions || []} 
+          grants={grants || []} 
+        />
 
         <Tabs defaultValue="grants" className="space-y-4">
           <TabsList>
