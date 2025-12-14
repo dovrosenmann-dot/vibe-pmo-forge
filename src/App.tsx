@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 import Meal from "./pages/Meal";
+import Finance from "./pages/Finance";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +36,7 @@ const App = () => (
                     <Route path="/meal" element={<Meal />} />
                     <Route path="/meal/:projectId" element={<Meal />} />
                     <Route path="/admin" element={<Admin />} />
-                    <Route path="/financial" element={<ComingSoon title="Financial Management" subtitle="Budgets, Grants & Invoices" description="This module will help you manage project budgets, track expenses, and process invoices." />} />
+                    <Route path="/financial" element={<Finance />} />
                     <Route path="/risks" element={<ComingSoon title="Risk Management" subtitle="Identify, Track & Mitigate Risks" description="This module will enable comprehensive risk tracking and mitigation planning." />} />
                     <Route path="/suppliers" element={<ComingSoon title="Suppliers & Contracts" subtitle="Manage Vendors & Consultants" description="This module will help you manage suppliers, consultants, and their contracts." />} />
                     <Route path="/reports" element={<ComingSoon title="Reports & Analytics" subtitle="Dashboards & Insights" description="This module will provide comprehensive reporting and analytics capabilities." />} />
