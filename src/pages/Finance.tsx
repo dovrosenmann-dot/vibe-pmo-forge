@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, DollarSign, TrendingUp, Wallet } from "lucide-react";
 import { useGrants } from "@/hooks/useGrants";
 import { useBudgetAllocations } from "@/hooks/useBudgetAllocations";
-import { useFinancialTransactions } from "@/hooks/useFinancialTransactions";
+import { useFinancialTransactions, TransactionApprovalStatus } from "@/hooks/useFinancialTransactions";
 import { TransactionApprovalActions, ApprovalStatusBadge } from "@/components/finance/TransactionApprovalActions";
 import { GrantForm } from "@/components/finance/GrantForm";
 import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm";
@@ -24,6 +24,7 @@ export default function Finance() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [approvalStatus, setApprovalStatus] = useState<TransactionApprovalStatus | undefined>(undefined);
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [allocationDialogOpen, setAllocationDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -35,6 +36,7 @@ export default function Finance() {
     {
       dateFrom: dateFrom?.toISOString().split('T')[0],
       dateTo: dateTo?.toISOString().split('T')[0],
+      approvalStatus,
     }
   );
 
@@ -82,6 +84,8 @@ export default function Finance() {
             dateTo={dateTo}
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
+            approvalStatus={approvalStatus}
+            onApprovalStatusChange={setApprovalStatus}
           />
           <FinanceExport
             grants={filteredGrants}
