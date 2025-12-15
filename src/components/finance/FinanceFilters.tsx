@@ -9,6 +9,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
+type ApprovalStatus = "pending" | "approved" | "rejected";
+
 interface FinanceFiltersProps {
   selectedProjectId: string | undefined;
   onProjectChange: (projectId: string | undefined) => void;
@@ -16,6 +18,8 @@ interface FinanceFiltersProps {
   dateTo: Date | undefined;
   onDateFromChange: (date: Date | undefined) => void;
   onDateToChange: (date: Date | undefined) => void;
+  approvalStatus: ApprovalStatus | undefined;
+  onApprovalStatusChange: (status: ApprovalStatus | undefined) => void;
 }
 
 export function FinanceFilters({
@@ -25,6 +29,8 @@ export function FinanceFilters({
   dateTo,
   onDateFromChange,
   onDateToChange,
+  approvalStatus,
+  onApprovalStatusChange,
 }: FinanceFiltersProps) {
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -42,9 +48,10 @@ export function FinanceFilters({
     onProjectChange(undefined);
     onDateFromChange(undefined);
     onDateToChange(undefined);
+    onApprovalStatusChange(undefined);
   };
 
-  const hasFilters = selectedProjectId || dateFrom || dateTo;
+  const hasFilters = selectedProjectId || dateFrom || dateTo || approvalStatus;
 
   return (
     <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/50 rounded-lg border">
@@ -120,6 +127,24 @@ export function FinanceFilters({
             />
           </PopoverContent>
         </Popover>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">Status Aprovação</span>
+        <Select
+          value={approvalStatus || "all"}
+          onValueChange={(value) => onApprovalStatusChange(value === "all" ? undefined : value as ApprovalStatus)}
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="pending">Pendente</SelectItem>
+            <SelectItem value="approved">Aprovado</SelectItem>
+            <SelectItem value="rejected">Rejeitado</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {hasFilters && (
