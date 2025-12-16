@@ -141,15 +141,12 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       // Send email notification to transaction creator
       if (data.created_by) {
         try {
-          // Get creator profile
+          // Get creator profile with email
           const { data: creatorProfile } = await supabase
             .from("profiles")
-            .select("full_name, user_id")
+            .select("full_name, email")
             .eq("user_id", data.created_by)
             .single();
-
-          // Get creator email from auth
-          const { data: userData } = await supabase.auth.admin?.getUserById(data.created_by) || {};
           
           // Get project info
           const { data: project } = await supabase
@@ -158,11 +155,10 @@ export function useFinancialTransactions(projectId?: string, filters?: {
             .eq("id", data.project_id)
             .single();
 
-          // If we can't get admin access, try to get email from profiles or skip
-          if (creatorProfile && project) {
+          if (creatorProfile?.email && project) {
             await supabase.functions.invoke("send-notification-email", {
               body: {
-                to: userData?.user?.email || `${data.created_by}@example.com`,
+                to: creatorProfile.email,
                 userName: creatorProfile.full_name || "Usuário",
                 notificationType: "transaction_approved",
                 projectCode: project.code,
@@ -175,7 +171,6 @@ export function useFinancialTransactions(projectId?: string, filters?: {
           }
         } catch (emailError) {
           console.error("Error sending approval email:", emailError);
-          // Don't fail the transaction if email fails
         }
       }
 
@@ -211,10 +206,10 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       // Send email notification to transaction creator
       if (data.created_by) {
         try {
-          // Get creator profile
+          // Get creator profile with email
           const { data: creatorProfile } = await supabase
             .from("profiles")
-            .select("full_name, user_id")
+            .select("full_name, email")
             .eq("user_id", data.created_by)
             .single();
 
@@ -225,10 +220,10 @@ export function useFinancialTransactions(projectId?: string, filters?: {
             .eq("id", data.project_id)
             .single();
 
-          if (creatorProfile && project) {
+          if (creatorProfile?.email && project) {
             await supabase.functions.invoke("send-notification-email", {
               body: {
-                to: `${data.created_by}@example.com`, // Fallback, ideally get from auth
+                to: creatorProfile.email,
                 userName: creatorProfile.full_name || "Usuário",
                 notificationType: "transaction_rejected",
                 projectCode: project.code,
