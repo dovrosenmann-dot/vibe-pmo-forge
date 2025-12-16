@@ -11,10 +11,14 @@ const corsHeaders = {
 interface NotificationRequest {
   to: string;
   userName: string;
-  notificationType: "role" | "project_access";
+  notificationType: "role" | "project_access" | "transaction_approved" | "transaction_rejected";
   roleName?: string;
   projectName?: string;
   projectCode?: string;
+  transactionDescription?: string;
+  transactionAmount?: number;
+  transactionCurrency?: string;
+  rejectionReason?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,7 +27,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, userName, notificationType, roleName, projectName, projectCode }: NotificationRequest = await req.json();
+    const { 
+      to, 
+      userName, 
+      notificationType, 
+      roleName, 
+      projectName, 
+      projectCode,
+      transactionDescription,
+      transactionAmount,
+      transactionCurrency,
+      rejectionReason
+    }: NotificationRequest = await req.json();
 
     let subject = "";
     let html = "";
@@ -45,6 +60,63 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Projeto:</strong> ${projectCode} - ${projectName}</p>
         <p>Faça login para visualizar e gerenciar este projeto.</p>
         <p>Atenciosamente,<br>Equipe de Administração</p>
+      `;
+    } else if (notificationType === "transaction_approved") {
+      const formattedAmount = new Intl.NumberFormat('pt-BR', { 
+        style: 'currency', 
+        currency: transactionCurrency || 'USD' 
+      }).format(transactionAmount || 0);
+      
+      subject = "Transação aprovada";
+      html = `
+        <h1>Olá, ${userName}!</h1>
+        <p>Sua transação financeira foi <strong style="color: green;">aprovada</strong>:</p>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Projeto:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${projectCode} - ${projectName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Descrição:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${transactionDescription}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Valor:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${formattedAmount}</td>
+          </tr>
+        </table>
+        <p>Atenciosamente,<br>Equipe Financeira</p>
+      `;
+    } else if (notificationType === "transaction_rejected") {
+      const formattedAmount = new Intl.NumberFormat('pt-BR', { 
+        style: 'currency', 
+        currency: transactionCurrency || 'USD' 
+      }).format(transactionAmount || 0);
+      
+      subject = "Transação rejeitada";
+      html = `
+        <h1>Olá, ${userName}!</h1>
+        <p>Sua transação financeira foi <strong style="color: red;">rejeitada</strong>:</p>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Projeto:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${projectCode} - ${projectName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Descrição:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${transactionDescription}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Valor:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${formattedAmount}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Motivo da rejeição:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${rejectionReason}</td>
+          </tr>
+        </table>
+        <p>Por favor, revise a transação e faça os ajustes necessários.</p>
+        <p>Atenciosamente,<br>Equipe Financeira</p>
       `;
     }
 
