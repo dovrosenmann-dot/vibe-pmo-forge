@@ -1,6 +1,6 @@
-import { Bell, Search } from "lucide-react";
-import { Button } from "./ui/button";
+import { Search } from "lucide-react";
 import { Input } from "./ui/input";
+import { NotificationBell } from "./NotificationBell";
 
 interface DashboardHeaderProps {
   title: string;
@@ -25,10 +25,7 @@ export const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
             />
           </div>
           
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-          </Button>
+          <NotificationBell />
         </div>
       </div>
     </header>
