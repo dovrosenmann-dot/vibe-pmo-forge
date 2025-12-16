@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, TrendingUp, Wallet } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, Wallet, History } from "lucide-react";
 import { useGrants } from "@/hooks/useGrants";
 import { useBudgetAllocations } from "@/hooks/useBudgetAllocations";
 import { useFinancialTransactions, TransactionApprovalStatus } from "@/hooks/useFinancialTransactions";
@@ -17,6 +17,7 @@ import { TransactionForm } from "@/components/finance/TransactionForm";
 import { FinanceCharts } from "@/components/finance/FinanceCharts";
 import { FinanceFilters } from "@/components/finance/FinanceFilters";
 import { FinanceExport } from "@/components/finance/FinanceExport";
+import { TransactionAuditHistory } from "@/components/finance/TransactionAuditHistory";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -28,6 +29,7 @@ export default function Finance() {
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [allocationDialogOpen, setAllocationDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [auditHistoryTransactionId, setAuditHistoryTransactionId] = useState<string | null>(null);
 
   const { grants, isLoading: grantsLoading, createGrant } = useGrants(selectedProjectId);
   const { allocations, isLoading: allocationsLoading, createAllocation } = useBudgetAllocations(selectedProjectId);
@@ -340,13 +342,23 @@ export default function Finance() {
                             />
                           </TableCell>
                           <TableCell>
-                            <TransactionApprovalActions
-                              transaction={transaction}
-                              onApprove={(id) => approveTransaction.mutate(id)}
-                              onReject={(id, reason) => rejectTransaction.mutate({ id, reason })}
-                              isApproving={approveTransaction.isPending}
-                              isRejecting={rejectTransaction.isPending}
-                            />
+                            <div className="flex items-center gap-2">
+                              <TransactionApprovalActions
+                                transaction={transaction}
+                                onApprove={(id) => approveTransaction.mutate(id)}
+                                onReject={(id, reason) => rejectTransaction.mutate({ id, reason })}
+                                isApproving={approveTransaction.isPending}
+                                isRejecting={rejectTransaction.isPending}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setAuditHistoryTransactionId(transaction.id)}
+                                title="Ver histórico"
+                              >
+                                <History className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -357,6 +369,21 @@ export default function Finance() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Audit History Dialog */}
+        <Dialog 
+          open={!!auditHistoryTransactionId} 
+          onOpenChange={(open) => !open && setAuditHistoryTransactionId(null)}
+        >
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Histórico de Alterações</DialogTitle>
+            </DialogHeader>
+            {auditHistoryTransactionId && (
+              <TransactionAuditHistory transactionId={auditHistoryTransactionId} />
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
