@@ -983,6 +983,53 @@ export type Database = {
           },
         ]
       }
+      transaction_audit_log: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_status: Database["public"]["Enums"]["transaction_approval_status"]
+          previous_status:
+            | Database["public"]["Enums"]["transaction_approval_status"]
+            | null
+          transaction_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status: Database["public"]["Enums"]["transaction_approval_status"]
+          previous_status?:
+            | Database["public"]["Enums"]["transaction_approval_status"]
+            | null
+          transaction_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: Database["public"]["Enums"]["transaction_approval_status"]
+          previous_status?:
+            | Database["public"]["Enums"]["transaction_approval_status"]
+            | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_audit_log_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "financial_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_project_access: {
         Row: {
           created_at: string
