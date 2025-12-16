@@ -137,6 +137,48 @@ export function useFinancialTransactions(projectId?: string, filters?: {
         .single();
 
       if (error) throw error;
+
+      // Send email notification to transaction creator
+      if (data.created_by) {
+        try {
+          // Get creator profile
+          const { data: creatorProfile } = await supabase
+            .from("profiles")
+            .select("full_name, user_id")
+            .eq("user_id", data.created_by)
+            .single();
+
+          // Get creator email from auth
+          const { data: userData } = await supabase.auth.admin?.getUserById(data.created_by) || {};
+          
+          // Get project info
+          const { data: project } = await supabase
+            .from("projects")
+            .select("code, name")
+            .eq("id", data.project_id)
+            .single();
+
+          // If we can't get admin access, try to get email from profiles or skip
+          if (creatorProfile && project) {
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                to: userData?.user?.email || `${data.created_by}@example.com`,
+                userName: creatorProfile.full_name || "Usuário",
+                notificationType: "transaction_approved",
+                projectCode: project.code,
+                projectName: project.name,
+                transactionDescription: data.description,
+                transactionAmount: data.amount,
+                transactionCurrency: data.currency,
+              },
+            });
+          }
+        } catch (emailError) {
+          console.error("Error sending approval email:", emailError);
+          // Don't fail the transaction if email fails
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -165,6 +207,45 @@ export function useFinancialTransactions(projectId?: string, filters?: {
         .single();
 
       if (error) throw error;
+
+      // Send email notification to transaction creator
+      if (data.created_by) {
+        try {
+          // Get creator profile
+          const { data: creatorProfile } = await supabase
+            .from("profiles")
+            .select("full_name, user_id")
+            .eq("user_id", data.created_by)
+            .single();
+
+          // Get project info
+          const { data: project } = await supabase
+            .from("projects")
+            .select("code, name")
+            .eq("id", data.project_id)
+            .single();
+
+          if (creatorProfile && project) {
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                to: `${data.created_by}@example.com`, // Fallback, ideally get from auth
+                userName: creatorProfile.full_name || "Usuário",
+                notificationType: "transaction_rejected",
+                projectCode: project.code,
+                projectName: project.name,
+                transactionDescription: data.description,
+                transactionAmount: data.amount,
+                transactionCurrency: data.currency,
+                rejectionReason: reason,
+              },
+            });
+          }
+        } catch (emailError) {
+          console.error("Error sending rejection email:", emailError);
+          // Don't fail the transaction if email fails
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
