@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, DollarSign, TrendingUp, Wallet, History } from "lucide-react";
 import { useGrants } from "@/hooks/useGrants";
 import { useBudgetAllocations } from "@/hooks/useBudgetAllocations";
-import { useFinancialTransactions, TransactionApprovalStatus } from "@/hooks/useFinancialTransactions";
+import { useFinancialTransactions, TransactionApprovalStatus, TransactionType } from "@/hooks/useFinancialTransactions";
 import { TransactionApprovalActions, ApprovalStatusBadge } from "@/components/finance/TransactionApprovalActions";
 import { GrantForm } from "@/components/finance/GrantForm";
 import { BudgetAllocationForm } from "@/components/finance/BudgetAllocationForm";
@@ -26,6 +26,7 @@ export default function Finance() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [approvalStatus, setApprovalStatus] = useState<TransactionApprovalStatus | undefined>(undefined);
+  const [transactionType, setTransactionType] = useState<TransactionType | undefined>(undefined);
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [allocationDialogOpen, setAllocationDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function Finance() {
   const { transactions, isLoading: transactionsLoading, createTransaction, approveTransaction, rejectTransaction } = useFinancialTransactions(
     selectedProjectId,
     {
+      type: transactionType,
       dateFrom: dateFrom?.toISOString().split('T')[0],
       dateTo: dateTo?.toISOString().split('T')[0],
       approvalStatus,
@@ -88,6 +90,8 @@ export default function Finance() {
             onDateToChange={setDateTo}
             approvalStatus={approvalStatus}
             onApprovalStatusChange={setApprovalStatus}
+            transactionType={transactionType}
+            onTransactionTypeChange={setTransactionType}
           />
           <FinanceExport
             grants={filteredGrants}
