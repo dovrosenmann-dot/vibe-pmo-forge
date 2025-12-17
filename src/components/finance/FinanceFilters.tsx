@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 type ApprovalStatus = "pending" | "approved" | "rejected";
+type TransactionType = "income" | "expense" | "transfer" | "adjustment";
 
 interface FinanceFiltersProps {
   selectedProjectId: string | undefined;
@@ -20,6 +21,8 @@ interface FinanceFiltersProps {
   onDateToChange: (date: Date | undefined) => void;
   approvalStatus: ApprovalStatus | undefined;
   onApprovalStatusChange: (status: ApprovalStatus | undefined) => void;
+  transactionType: TransactionType | undefined;
+  onTransactionTypeChange: (type: TransactionType | undefined) => void;
 }
 
 export function FinanceFilters({
@@ -31,6 +34,8 @@ export function FinanceFilters({
   onDateToChange,
   approvalStatus,
   onApprovalStatusChange,
+  transactionType,
+  onTransactionTypeChange,
 }: FinanceFiltersProps) {
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -49,9 +54,10 @@ export function FinanceFilters({
     onDateFromChange(undefined);
     onDateToChange(undefined);
     onApprovalStatusChange(undefined);
+    onTransactionTypeChange(undefined);
   };
 
-  const hasFilters = selectedProjectId || dateFrom || dateTo || approvalStatus;
+  const hasFilters = selectedProjectId || dateFrom || dateTo || approvalStatus || transactionType;
 
   return (
     <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/50 rounded-lg border">
@@ -127,6 +133,25 @@ export function FinanceFilters({
             />
           </PopoverContent>
         </Popover>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">Tipo Transação</span>
+        <Select
+          value={transactionType || "all"}
+          onValueChange={(value) => onTransactionTypeChange(value === "all" ? undefined : value as TransactionType)}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Todos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="income">Receita</SelectItem>
+            <SelectItem value="expense">Despesa</SelectItem>
+            <SelectItem value="transfer">Transferência</SelectItem>
+            <SelectItem value="adjustment">Ajuste</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex flex-col gap-1">
