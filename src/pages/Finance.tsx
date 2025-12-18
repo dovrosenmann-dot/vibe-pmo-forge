@@ -18,6 +18,7 @@ import { FinanceCharts } from "@/components/finance/FinanceCharts";
 import { FinanceFilters } from "@/components/finance/FinanceFilters";
 import { FinanceExport } from "@/components/finance/FinanceExport";
 import { TransactionAuditHistory } from "@/components/finance/TransactionAuditHistory";
+import { TransactionSummaryReport } from "@/components/finance/TransactionSummaryReport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -159,6 +160,12 @@ export default function Finance() {
           allocations={filteredAllocations} 
           transactions={transactions || []} 
           grants={filteredGrants} 
+        />
+
+        <TransactionSummaryReport 
+          transactions={transactions || []} 
+          dateFrom={dateFrom} 
+          dateTo={dateTo} 
         />
 
         <Tabs defaultValue="grants" className="space-y-4">
