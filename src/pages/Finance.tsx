@@ -21,6 +21,22 @@ import { TransactionAuditHistory } from "@/components/finance/TransactionAuditHi
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const transactionTypeConfig: Record<string, { label: string; className: string }> = {
+  income: { label: "Receita", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
+  expense: { label: "Despesa", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" },
+  transfer: { label: "Transferência", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+  adjustment: { label: "Ajuste", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" },
+};
+
+function TransactionTypeBadge({ type }: { type: string }) {
+  const config = transactionTypeConfig[type] || { label: type, className: "bg-gray-100 text-gray-800" };
+  return (
+    <Badge variant="outline" className={config.className}>
+      {config.label}
+    </Badge>
+  );
+}
+
 export default function Finance() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -331,12 +347,14 @@ export default function Finance() {
                             {format(new Date(transaction.transaction_date), "dd/MM/yyyy", { locale: ptBR })}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={transaction.transaction_type === "income" ? "default" : "secondary"}>
-                              {transaction.transaction_type}
-                            </Badge>
+                            <TransactionTypeBadge type={transaction.transaction_type} />
                           </TableCell>
                           <TableCell>{transaction.description}</TableCell>
-                          <TableCell className={transaction.transaction_type === "expense" ? "text-destructive" : "text-primary"}>
+                          <TableCell className={
+                            transaction.transaction_type === "expense" ? "text-red-600 dark:text-red-400" : 
+                            transaction.transaction_type === "income" ? "text-green-600 dark:text-green-400" : 
+                            "text-foreground"
+                          }>
                             {transaction.currency} {transaction.amount.toLocaleString()}
                           </TableCell>
                           <TableCell>
