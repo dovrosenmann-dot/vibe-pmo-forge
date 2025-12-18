@@ -13,6 +13,7 @@ import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 import Meal from "./pages/Meal";
 import Finance from "./pages/Finance";
+import Suppliers from "./pages/Suppliers";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,7 @@ const App = () => (
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/financial" element={<Finance />} />
                     <Route path="/risks" element={<ComingSoon title="Risk Management" subtitle="Identify, Track & Mitigate Risks" description="This module will enable comprehensive risk tracking and mitigation planning." />} />
-                    <Route path="/suppliers" element={<ComingSoon title="Suppliers & Contracts" subtitle="Manage Vendors & Consultants" description="This module will help you manage suppliers, consultants, and their contracts." />} />
+                    <Route path="/suppliers" element={<Suppliers />} />
                     <Route path="/reports" element={<ComingSoon title="Reports & Analytics" subtitle="Dashboards & Insights" description="This module will provide comprehensive reporting and analytics capabilities." />} />
                     <Route path="/settings" element={<ComingSoon title="Settings" subtitle="System Configuration" description="Configure users, permissions, and system preferences." />} />
                     <Route path="*" element={<NotFound />} />
