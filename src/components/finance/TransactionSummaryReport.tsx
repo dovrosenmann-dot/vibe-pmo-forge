@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRightLeft, Settings2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 interface Transaction {
   id: string;
@@ -21,11 +23,18 @@ interface TransactionSummaryReportProps {
   dateTo?: Date;
 }
 
-const typeConfig: Record<string, { label: string; icon: React.ElementType; colorClass: string }> = {
-  income: { label: "Receitas", icon: TrendingUp, colorClass: "text-green-600 dark:text-green-400" },
-  expense: { label: "Despesas", icon: TrendingDown, colorClass: "text-red-600 dark:text-red-400" },
-  transfer: { label: "Transferências", icon: ArrowRightLeft, colorClass: "text-blue-600 dark:text-blue-400" },
-  adjustment: { label: "Ajustes", icon: Settings2, colorClass: "text-amber-600 dark:text-amber-400" },
+const typeConfig: Record<string, { label: string; icon: React.ElementType; colorClass: string; chartColor: string }> = {
+  income: { label: "Receitas", icon: TrendingUp, colorClass: "text-green-600 dark:text-green-400", chartColor: "#22c55e" },
+  expense: { label: "Despesas", icon: TrendingDown, colorClass: "text-red-600 dark:text-red-400", chartColor: "#ef4444" },
+  transfer: { label: "Transferências", icon: ArrowRightLeft, colorClass: "text-blue-600 dark:text-blue-400", chartColor: "#3b82f6" },
+  adjustment: { label: "Ajustes", icon: Settings2, colorClass: "text-amber-600 dark:text-amber-400", chartColor: "#f59e0b" },
+};
+
+const chartConfig = {
+  income: { label: "Receitas", color: "#22c55e" },
+  expense: { label: "Despesas", color: "#ef4444" },
+  transfer: { label: "Transferências", color: "#3b82f6" },
+  adjustment: { label: "Ajustes", color: "#f59e0b" },
 };
 
 export function TransactionSummaryReport({ transactions, dateFrom, dateTo }: TransactionSummaryReportProps) {
@@ -49,6 +58,27 @@ export function TransactionSummaryReport({ transactions, dateFrom, dateTo }: Tra
     });
     
     return summary;
+  }, [transactions]);
+
+  const monthlyData = useMemo(() => {
+    const monthlyMap: Record<string, Record<string, number>> = {};
+    
+    transactions.forEach((t) => {
+      const date = parseISO(t.transaction_date);
+      const monthKey = format(date, "yyyy-MM");
+      
+      if (!monthlyMap[monthKey]) {
+        monthlyMap[monthKey] = { income: 0, expense: 0, transfer: 0, adjustment: 0 };
+      }
+      monthlyMap[monthKey][t.transaction_type] = (monthlyMap[monthKey][t.transaction_type] || 0) + t.amount;
+    });
+
+    return Object.entries(monthlyMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => ({
+        month: format(parseISO(`${month}-01`), "MMM/yy", { locale: ptBR }),
+        ...data,
+      }));
   }, [transactions]);
 
   const totals = useMemo(() => {
@@ -83,6 +113,8 @@ export function TransactionSummaryReport({ transactions, dateFrom, dateTo }: Tra
   if (transactions.length === 0) {
     return null;
   }
+
+  const activeTypes = Object.keys(summaryByType);
 
   return (
     <Card className="mb-6">
@@ -133,6 +165,75 @@ export function TransactionSummaryReport({ transactions, dateFrom, dateTo }: Tra
             </Badge>
           </div>
         </div>
+
+        {monthlyData.length > 1 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-muted-foreground mb-4">Evolução Mensal por Tipo</h4>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    className="text-muted-foreground"
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                  {activeTypes.includes("income") && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="income" 
+                      name="Receitas"
+                      stroke={typeConfig.income.chartColor} 
+                      strokeWidth={2}
+                      dot={{ fill: typeConfig.income.chartColor, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+                  {activeTypes.includes("expense") && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="expense" 
+                      name="Despesas"
+                      stroke={typeConfig.expense.chartColor} 
+                      strokeWidth={2}
+                      dot={{ fill: typeConfig.expense.chartColor, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+                  {activeTypes.includes("transfer") && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="transfer" 
+                      name="Transferências"
+                      stroke={typeConfig.transfer.chartColor} 
+                      strokeWidth={2}
+                      dot={{ fill: typeConfig.transfer.chartColor, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+                  {activeTypes.includes("adjustment") && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="adjustment" 
+                      name="Ajustes"
+                      stroke={typeConfig.adjustment.chartColor} 
+                      strokeWidth={2}
+                      dot={{ fill: typeConfig.adjustment.chartColor, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
+        )}
 
         <Table>
           <TableHeader>
