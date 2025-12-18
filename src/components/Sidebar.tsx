@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Users, FileText, Settings, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Building2, FileText, Settings, LogOut, Shield } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
@@ -25,7 +25,7 @@ export const Sidebar = () => {
     { to: "/meal", icon: TrendingUp, label: "MEAL" },
     { to: "/financial", icon: DollarSign, label: "Financial" },
     { to: "/risks", icon: AlertTriangle, label: "Risks" },
-    { to: "/suppliers", icon: Users, label: "Suppliers" },
+    { to: "/suppliers", icon: Building2, label: "Fornecedores" },
     { to: "/reports", icon: FileText, label: "Reports" },
     { to: "/settings", icon: Settings, label: "Settings" },
   ];

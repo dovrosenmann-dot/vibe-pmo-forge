@@ -260,6 +260,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           category: Database["public"]["Enums"]["expense_category"] | null
+          contract_id: string | null
           created_at: string | null
           created_by: string | null
           currency: string
@@ -272,6 +273,7 @@ export type Database = {
           project_id: string
           reference_number: string | null
           rejection_reason: string | null
+          supplier_id: string | null
           transaction_date: string
           transaction_type: string
           updated_at: string | null
@@ -283,6 +285,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           category?: Database["public"]["Enums"]["expense_category"] | null
+          contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
           currency?: string
@@ -295,6 +298,7 @@ export type Database = {
           project_id: string
           reference_number?: string | null
           rejection_reason?: string | null
+          supplier_id?: string | null
           transaction_date: string
           transaction_type: string
           updated_at?: string | null
@@ -306,6 +310,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           category?: Database["public"]["Enums"]["expense_category"] | null
+          contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
           currency?: string
@@ -318,12 +323,20 @@ export type Database = {
           project_id?: string
           reference_number?: string | null
           rejection_reason?: string | null
+          supplier_id?: string | null
           transaction_date?: string
           transaction_type?: string
           updated_at?: string | null
           workstream_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "financial_transactions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "financial_transactions_expense_id_fkey"
             columns: ["expense_id"]
@@ -350,6 +363,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -662,6 +682,7 @@ export type Database = {
       meal_deliveries: {
         Row: {
           beneficiary_group: string | null
+          contract_id: string | null
           created_at: string | null
           delivered_qty: number
           delivery_date_actual: string | null
@@ -675,12 +696,14 @@ export type Database = {
           project_id: string
           salesforce_id: string | null
           status: Database["public"]["Enums"]["meal_delivery_status"]
+          supplier_id: string | null
           unit: Database["public"]["Enums"]["meal_delivery_unit"]
           updated_at: string | null
           workstream_id: string | null
         }
         Insert: {
           beneficiary_group?: string | null
+          contract_id?: string | null
           created_at?: string | null
           delivered_qty?: number
           delivery_date_actual?: string | null
@@ -694,12 +717,14 @@ export type Database = {
           project_id: string
           salesforce_id?: string | null
           status?: Database["public"]["Enums"]["meal_delivery_status"]
+          supplier_id?: string | null
           unit?: Database["public"]["Enums"]["meal_delivery_unit"]
           updated_at?: string | null
           workstream_id?: string | null
         }
         Update: {
           beneficiary_group?: string | null
+          contract_id?: string | null
           created_at?: string | null
           delivered_qty?: number
           delivery_date_actual?: string | null
@@ -713,16 +738,31 @@ export type Database = {
           project_id?: string
           salesforce_id?: string | null
           status?: Database["public"]["Enums"]["meal_delivery_status"]
+          supplier_id?: string | null
           unit?: Database["public"]["Enums"]["meal_delivery_unit"]
           updated_at?: string | null
           workstream_id?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "meal_deliveries_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_contracts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "meal_deliveries_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_deliveries_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -1019,6 +1059,137 @@ export type Database = {
           },
         ]
       }
+      supplier_contracts: {
+        Row: {
+          contract_number: string
+          created_at: string | null
+          currency: string
+          deliverables: string | null
+          description: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          payment_schedule: string | null
+          project_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["contract_status"]
+          supplier_id: string
+          total_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          contract_number: string
+          created_at?: string | null
+          currency?: string
+          deliverables?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          payment_schedule?: string | null
+          project_id: string
+          start_date: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          supplier_id: string
+          total_value?: number
+          updated_at?: string | null
+        }
+        Update: {
+          contract_number?: string
+          created_at?: string | null
+          currency?: string
+          deliverables?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          payment_schedule?: string | null
+          project_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          supplier_id?: string
+          total_value?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_contracts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          category: Database["public"]["Enums"]["supplier_category"]
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          project_id: string
+          rating: number | null
+          status: Database["public"]["Enums"]["supplier_status"]
+          tax_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["supplier_category"]
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          project_id: string
+          rating?: number | null
+          status?: Database["public"]["Enums"]["supplier_status"]
+          tax_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["supplier_category"]
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          project_id?: string
+          rating?: number | null
+          status?: Database["public"]["Enums"]["supplier_status"]
+          tax_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transaction_audit_log: {
         Row: {
           change_reason: string | null
@@ -1194,6 +1365,12 @@ export type Database = {
         | "Escola"
         | "Comunidade"
         | "Associação"
+      contract_status:
+        | "draft"
+        | "active"
+        | "completed"
+        | "cancelled"
+        | "expired"
       expense_category:
         | "personnel"
         | "travel"
@@ -1237,6 +1414,15 @@ export type Database = {
         | "scope"
         | "compliance"
         | "quality"
+      supplier_category:
+        | "goods"
+        | "services"
+        | "logistics"
+        | "consulting"
+        | "construction"
+        | "equipment"
+        | "other"
+      supplier_status: "active" | "inactive" | "blocked" | "pending_approval"
       transaction_approval_status: "pending" | "approved" | "rejected"
       workstream_category:
         | "governance"
@@ -1389,6 +1575,7 @@ export const Constants = {
         "Comunidade",
         "Associação",
       ],
+      contract_status: ["draft", "active", "completed", "cancelled", "expired"],
       expense_category: [
         "personnel",
         "travel",
@@ -1437,6 +1624,16 @@ export const Constants = {
         "compliance",
         "quality",
       ],
+      supplier_category: [
+        "goods",
+        "services",
+        "logistics",
+        "consulting",
+        "construction",
+        "equipment",
+        "other",
+      ],
+      supplier_status: ["active", "inactive", "blocked", "pending_approval"],
       transaction_approval_status: ["pending", "approved", "rejected"],
       workstream_category: [
         "governance",
