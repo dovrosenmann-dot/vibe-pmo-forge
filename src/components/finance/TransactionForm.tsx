@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FinancialTransaction, TransactionType } from "@/hooks/useFinancialTransactions";
 import { useGrants } from "@/hooks/useGrants";
 import { useWorkstreams } from "@/hooks/useWorkstreams";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 
 const formSchema = z.object({
   transaction_type: z.enum(["income", "expense", "transfer", "adjustment"]),
@@ -20,6 +22,8 @@ const formSchema = z.object({
   reference_number: z.string().optional(),
   grant_id: z.string().optional(),
   workstream_id: z.string().optional(),
+  supplier_id: z.string().optional(),
+  contract_id: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -33,6 +37,8 @@ interface TransactionFormProps {
 export function TransactionForm({ projectId, transaction, onSuccess, onSubmit }: TransactionFormProps) {
   const { grants } = useGrants(projectId);
   const { data: workstreams } = useWorkstreams(projectId);
+  const { suppliers } = useSuppliers(projectId);
+  const { contracts } = useSupplierContracts(projectId);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,12 +52,19 @@ export function TransactionForm({ projectId, transaction, onSuccess, onSubmit }:
       reference_number: transaction.reference_number || "",
       grant_id: transaction.grant_id || "",
       workstream_id: transaction.workstream_id || "",
+      supplier_id: transaction.supplier_id || "",
+      contract_id: transaction.contract_id || "",
       notes: transaction.notes || "",
     } : {
       currency: "USD",
       transaction_date: new Date().toISOString().split('T')[0],
     },
   });
+
+  const selectedSupplierId = form.watch("supplier_id");
+  const filteredContracts = contracts?.filter(c => 
+    !selectedSupplierId || c.supplier_id === selectedSupplierId
+  );
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit({
@@ -60,6 +73,8 @@ export function TransactionForm({ projectId, transaction, onSuccess, onSubmit }:
       amount: parseFloat(values.amount),
       grant_id: values.grant_id || null,
       workstream_id: values.workstream_id || null,
+      supplier_id: values.supplier_id || null,
+      contract_id: values.contract_id || null,
       category: values.category || null,
     });
     onSuccess();
@@ -255,6 +270,60 @@ export function TransactionForm({ projectId, transaction, onSuccess, onSubmit }:
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="supplier_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fornecedor (Opcional)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um fornecedor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {suppliers?.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="contract_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contrato (Opcional)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um contrato" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {filteredContracts?.map((contract) => (
+                      <SelectItem key={contract.id} value={contract.id}>
+                        {contract.contract_number} - {contract.supplier?.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

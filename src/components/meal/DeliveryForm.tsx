@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 
 interface DeliveryFormProps {
   projectId?: string;
@@ -16,9 +18,14 @@ interface DeliveryFormProps {
 export function DeliveryForm({ projectId, onSuccess }: DeliveryFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { suppliers } = useSuppliers(projectId);
+  const { contracts } = useSupplierContracts(projectId);
+  
   const [formData, setFormData] = useState({
     item_name: "",
     workstream_id: "",
+    supplier_id: "",
+    contract_id: "",
     planned_qty: "",
     delivered_qty: "0",
     unit: "un",
@@ -29,6 +36,10 @@ export function DeliveryForm({ projectId, onSuccess }: DeliveryFormProps) {
     status: "Planned",
     notes: "",
   });
+
+  const filteredContracts = contracts?.filter(c => 
+    !formData.supplier_id || c.supplier_id === formData.supplier_id
+  );
 
   const { data: workstreams } = useQuery({
     queryKey: ["workstreams", projectId],
@@ -50,6 +61,8 @@ export function DeliveryForm({ projectId, onSuccess }: DeliveryFormProps) {
         project_id: projectId,
         planned_qty: parseFloat(data.planned_qty),
         delivered_qty: parseFloat(data.delivered_qty),
+        supplier_id: data.supplier_id || null,
+        contract_id: data.contract_id || null,
       }]);
       if (error) throw error;
     },
@@ -131,6 +144,48 @@ export function DeliveryForm({ projectId, onSuccess }: DeliveryFormProps) {
               <SelectItem value="In-Progress">In-Progress</SelectItem>
               <SelectItem value="Delivered">Delivered</SelectItem>
               <SelectItem value="Blocked">Blocked</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="supplier_id">Fornecedor</Label>
+          <Select
+            value={formData.supplier_id}
+            onValueChange={(value) => setFormData({ ...formData, supplier_id: value, contract_id: "" })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nenhum</SelectItem>
+              {suppliers?.map((supplier) => (
+                <SelectItem key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="contract_id">Contrato</Label>
+          <Select
+            value={formData.contract_id}
+            onValueChange={(value) => setFormData({ ...formData, contract_id: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nenhum</SelectItem>
+              {filteredContracts?.map((contract) => (
+                <SelectItem key={contract.id} value={contract.id}>
+                  {contract.contract_number} - {contract.supplier?.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
