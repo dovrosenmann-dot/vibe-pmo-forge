@@ -11,6 +11,8 @@ export interface FinancialTransaction {
   project_id: string;
   grant_id: string | null;
   workstream_id: string | null;
+  supplier_id: string | null;
+  contract_id: string | null;
   transaction_type: TransactionType;
   category: ExpenseCategory | null;
   amount: number;
