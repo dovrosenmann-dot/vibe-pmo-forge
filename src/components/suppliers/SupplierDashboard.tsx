@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, FileText, DollarSign, Package, Star } from "lucide-react";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface SupplierDashboardProps {
   projectId?: string;
@@ -26,6 +27,16 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   pending_approval: { label: "Pendente", variant: "outline" },
 };
 
+const COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(220, 70%, 50%)",
+  "hsl(280, 65%, 60%)",
+];
+
 function RatingStars({ rating }: { rating: number | null }) {
   if (!rating) return <span className="text-muted-foreground text-sm">-</span>;
   return (
@@ -46,6 +57,28 @@ export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
   if (isLoading) {
     return <div className="text-center py-8 text-muted-foreground">Carregando dashboard...</div>;
   }
+
+  // Prepare chart data
+  const spendingBySupplier = summaries
+    .filter(s => s.totalSpent > 0)
+    .sort((a, b) => b.totalSpent - a.totalSpent)
+    .slice(0, 10)
+    .map(s => ({
+      name: s.name.length > 15 ? s.name.substring(0, 15) + "..." : s.name,
+      fullName: s.name,
+      gasto: s.totalSpent,
+      contratado: s.totalContractValue,
+    }));
+
+  const contractsByCategory = Object.entries(
+    summaries.reduce((acc, s) => {
+      const cat = categoryLabels[s.category] || s.category;
+      acc[cat] = (acc[cat] || 0) + s.totalContractValue;
+      return acc;
+    }, {} as Record<string, number>)
+  )
+    .filter(([_, value]) => value > 0)
+    .map(([name, value]) => ({ name, value }));
 
   return (
     <div className="space-y-6">
@@ -125,6 +158,118 @@ export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Charts Section */}
+      {(spendingBySupplier.length > 0 || contractsByCategory.length > 0) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Spending by Supplier Bar Chart */}
+          {spendingBySupplier.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Gastos por Fornecedor</CardTitle>
+                <CardDescription>Top 10 fornecedores por valor gasto</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={spendingBySupplier}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        type="number" 
+                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                        className="text-xs"
+                      />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        width={100}
+                        className="text-xs"
+                      />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [
+                          `$${value.toLocaleString()}`,
+                          name === "gasto" ? "Gasto" : "Contratado"
+                        ]}
+                        labelFormatter={(label, payload) => 
+                          payload?.[0]?.payload?.fullName || label
+                        }
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "var(--radius)",
+                        }}
+                      />
+                      <Bar 
+                        dataKey="gasto" 
+                        fill="hsl(var(--chart-1))" 
+                        name="Gasto"
+                        radius={[0, 4, 4, 0]}
+                      />
+                      <Bar 
+                        dataKey="contratado" 
+                        fill="hsl(var(--chart-2))" 
+                        name="Contratado"
+                        radius={[0, 4, 4, 0]}
+                        fillOpacity={0.5}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Contracts by Category Pie Chart */}
+          {contractsByCategory.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Contratos por Categoria</CardTitle>
+                <CardDescription>Distribuição do valor contratado</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={contractsByCategory}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => 
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {contractsByCategory.map((_, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={COLORS[index % COLORS.length]} 
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => [`$${value.toLocaleString()}`, "Valor"]}
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "var(--radius)",
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* Suppliers Table */}
