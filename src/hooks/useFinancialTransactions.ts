@@ -30,6 +30,8 @@ export interface FinancialTransaction {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  supplier?: { id: string; name: string } | null;
+  contract?: { id: string; contract_number: string } | null;
 }
 
 export function useFinancialTransactions(projectId?: string, filters?: {
@@ -45,7 +47,11 @@ export function useFinancialTransactions(projectId?: string, filters?: {
     queryFn: async () => {
       let query = supabase
         .from("financial_transactions")
-        .select("*")
+        .select(`
+          *,
+          supplier:suppliers(id, name),
+          contract:supplier_contracts(id, contract_number)
+        `)
         .order("transaction_date", { ascending: false });
 
       if (projectId) {

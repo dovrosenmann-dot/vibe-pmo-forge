@@ -33,12 +33,13 @@ export function DeliveriesTable({ projectId, filters }: DeliveriesTableProps) {
   }
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Item</TableHead>
-            <TableHead>Workstream</TableHead>
+            <TableHead>Fornecedor</TableHead>
+            <TableHead>Contrato</TableHead>
             <TableHead>Qtd. Planejada</TableHead>
             <TableHead>Qtd. Entregue</TableHead>
             <TableHead>% Cumprido</TableHead>
@@ -58,7 +59,16 @@ export function DeliveriesTable({ projectId, filters }: DeliveriesTableProps) {
             return (
               <TableRow key={delivery.id}>
                 <TableCell className="font-medium">{delivery.item_name}</TableCell>
-                <TableCell>{delivery.workstream_id || "-"}</TableCell>
+                <TableCell>
+                  {delivery.supplier?.name || (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {delivery.contract?.contract_number || (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>{Number(delivery.planned_qty).toLocaleString()} {delivery.unit}</TableCell>
                 <TableCell>{Number(delivery.delivered_qty).toLocaleString()} {delivery.unit}</TableCell>
                 <TableCell>
