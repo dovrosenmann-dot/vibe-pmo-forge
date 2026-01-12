@@ -336,63 +336,77 @@ export default function Finance() {
                 {transactionsLoading ? (
                   <p>Carregando...</p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactions?.map((transaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell>
-                            {format(new Date(transaction.transaction_date), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            <TransactionTypeBadge type={transaction.transaction_type} />
-                          </TableCell>
-                          <TableCell>{transaction.description}</TableCell>
-                          <TableCell className={
-                            transaction.transaction_type === "expense" ? "text-red-600 dark:text-red-400" : 
-                            transaction.transaction_type === "income" ? "text-green-600 dark:text-green-400" : 
-                            "text-foreground"
-                          }>
-                            {transaction.currency} {transaction.amount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <ApprovalStatusBadge 
-                              status={transaction.approval_status} 
-                              rejectionReason={transaction.rejection_reason}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <TransactionApprovalActions
-                                transaction={transaction}
-                                onApprove={(id) => approveTransaction.mutate(id)}
-                                onReject={(id, reason) => rejectTransaction.mutate({ id, reason })}
-                                isApproving={approveTransaction.isPending}
-                                isRejecting={rejectTransaction.isPending}
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setAuditHistoryTransactionId(transaction.id)}
-                                title="Ver histórico"
-                              >
-                                <History className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead>Fornecedor</TableHead>
+                          <TableHead>Contrato</TableHead>
+                          <TableHead>Valor</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Ações</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions?.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell>
+                              {format(new Date(transaction.transaction_date), "dd/MM/yyyy", { locale: ptBR })}
+                            </TableCell>
+                            <TableCell>
+                              <TransactionTypeBadge type={transaction.transaction_type} />
+                            </TableCell>
+                            <TableCell>{transaction.description}</TableCell>
+                            <TableCell>
+                              {transaction.supplier?.name || (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {transaction.contract?.contract_number || (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className={
+                              transaction.transaction_type === "expense" ? "text-red-600 dark:text-red-400" : 
+                              transaction.transaction_type === "income" ? "text-green-600 dark:text-green-400" : 
+                              "text-foreground"
+                            }>
+                              {transaction.currency} {transaction.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              <ApprovalStatusBadge 
+                                status={transaction.approval_status} 
+                                rejectionReason={transaction.rejection_reason}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <TransactionApprovalActions
+                                  transaction={transaction}
+                                  onApprove={(id) => approveTransaction.mutate(id)}
+                                  onReject={(id, reason) => rejectTransaction.mutate({ id, reason })}
+                                  isApproving={approveTransaction.isPending}
+                                  isRejecting={rejectTransaction.isPending}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setAuditHistoryTransactionId(transaction.id)}
+                                  title="Ver histórico"
+                                >
+                                  <History className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
