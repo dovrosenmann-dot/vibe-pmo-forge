@@ -7,12 +7,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building2, FileText, Star, Trash2, Edit } from "lucide-react";
+import { Plus, Building2, FileText, Star, Trash2, Paperclip } from "lucide-react";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import { ContractForm } from "@/components/suppliers/ContractForm";
 import { SupplierDashboard } from "@/components/suppliers/SupplierDashboard";
+import { DocumentUpload } from "@/components/suppliers/DocumentUpload";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
@@ -47,6 +48,8 @@ export default function Suppliers() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [contractDialogOpen, setContractDialogOpen] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
+  const [selectedContractId, setSelectedContractId] = useState<string | undefined>(undefined);
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -97,6 +100,7 @@ export default function Suppliers() {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="suppliers">Fornecedores</TabsTrigger>
             <TabsTrigger value="contracts">Contratos</TabsTrigger>
+            <TabsTrigger value="documents">Documentos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -188,13 +192,26 @@ export default function Suppliers() {
                               <Badge variant={status.variant}>{status.label}</Badge>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteSupplier.mutate(supplier.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedSupplierId(supplier.id);
+                                    setSelectedContractId(undefined);
+                                  }}
+                                  title="Ver documentos"
+                                >
+                                  <Paperclip className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => deleteSupplier.mutate(supplier.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -287,13 +304,26 @@ export default function Suppliers() {
                               <Badge variant={status.variant}>{status.label}</Badge>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteContract.mutate(contract.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedContractId(contract.id);
+                                    setSelectedSupplierId(undefined);
+                                  }}
+                                  title="Ver documentos"
+                                >
+                                  <Paperclip className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => deleteContract.mutate(contract.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -303,6 +333,80 @@ export default function Suppliers() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-4">
+            {!selectedProjectId ? (
+              <Card>
+                <CardContent className="py-8">
+                  <p className="text-center text-muted-foreground">
+                    Selecione um projeto para gerenciar documentos
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Filtrar por Fornecedor</label>
+                    <Select
+                      value={selectedSupplierId || "all"}
+                      onValueChange={(v) => {
+                        setSelectedSupplierId(v === "all" ? undefined : v);
+                        if (v !== "all") setSelectedContractId(undefined);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos os fornecedores" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os fornecedores</SelectItem>
+                        {suppliers?.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Filtrar por Contrato</label>
+                    <Select
+                      value={selectedContractId || "all"}
+                      onValueChange={(v) => {
+                        setSelectedContractId(v === "all" ? undefined : v);
+                        if (v !== "all") setSelectedSupplierId(undefined);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos os contratos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os contratos</SelectItem>
+                        {contracts?.map((contract: any) => (
+                          <SelectItem key={contract.id} value={contract.id}>
+                            {contract.contract_number} - {contract.supplier?.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <DocumentUpload
+                  projectId={selectedProjectId}
+                  supplierId={selectedSupplierId}
+                  contractId={selectedContractId}
+                  title={
+                    selectedSupplierId
+                      ? `Documentos do Fornecedor: ${suppliers?.find((s) => s.id === selectedSupplierId)?.name}`
+                      : selectedContractId
+                      ? `Documentos do Contrato: ${contracts?.find((c: any) => c.id === selectedContractId)?.contract_number}`
+                      : "Todos os Documentos"
+                  }
+                />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
