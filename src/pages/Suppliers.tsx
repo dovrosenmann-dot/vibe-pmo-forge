@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building2, FileText, Star, Trash2, Paperclip } from "lucide-react";
-import { useSuppliers } from "@/hooks/useSuppliers";
+import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil } from "lucide-react";
+import { useSuppliers, Supplier } from "@/hooks/useSuppliers";
 import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import { ContractForm } from "@/components/suppliers/ContractForm";
@@ -50,6 +50,8 @@ export default function Suppliers() {
   const [contractDialogOpen, setContractDialogOpen] = useState(false);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
   const [selectedContractId, setSelectedContractId] = useState<string | undefined>(undefined);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [editingContract, setEditingContract] = useState<any | null>(null);
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -60,8 +62,44 @@ export default function Suppliers() {
     },
   });
 
-  const { suppliers, isLoading: suppliersLoading, createSupplier, deleteSupplier } = useSuppliers(selectedProjectId);
-  const { contracts, isLoading: contractsLoading, createContract, deleteContract } = useSupplierContracts(selectedProjectId);
+  const { suppliers, isLoading: suppliersLoading, createSupplier, updateSupplier, deleteSupplier } = useSuppliers(selectedProjectId);
+  const { contracts, isLoading: contractsLoading, createContract, updateContract, deleteContract } = useSupplierContracts(selectedProjectId);
+
+  const handleSupplierDialogClose = (open: boolean) => {
+    setSupplierDialogOpen(open);
+    if (!open) setEditingSupplier(null);
+  };
+
+  const handleContractDialogClose = (open: boolean) => {
+    setContractDialogOpen(open);
+    if (!open) setEditingContract(null);
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    setSupplierDialogOpen(true);
+  };
+
+  const handleEditContract = (contract: any) => {
+    setEditingContract(contract);
+    setContractDialogOpen(true);
+  };
+
+  const handleSupplierSubmit = (data: any) => {
+    if (editingSupplier) {
+      updateSupplier.mutate({ id: editingSupplier.id, ...data });
+    } else {
+      createSupplier.mutate(data);
+    }
+  };
+
+  const handleContractSubmit = (data: any) => {
+    if (editingContract) {
+      updateContract.mutate({ id: editingContract.id, ...data });
+    } else {
+      createContract.mutate(data);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,7 +156,7 @@ export default function Suppliers() {
                     </CardTitle>
                     <CardDescription>Cadastro de fornecedores do projeto</CardDescription>
                   </div>
-                  <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+                  <Dialog open={supplierDialogOpen} onOpenChange={handleSupplierDialogClose}>
                     <DialogTrigger asChild>
                       <Button disabled={!selectedProjectId}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -127,12 +165,26 @@ export default function Suppliers() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Cadastrar Fornecedor</DialogTitle>
+                        <DialogTitle>{editingSupplier ? "Editar Fornecedor" : "Cadastrar Fornecedor"}</DialogTitle>
                       </DialogHeader>
                       <SupplierForm
                         projectId={selectedProjectId || ""}
-                        onSubmit={(data) => createSupplier.mutate(data)}
-                        onSuccess={() => setSupplierDialogOpen(false)}
+                        onSubmit={handleSupplierSubmit}
+                        onSuccess={() => handleSupplierDialogClose(false)}
+                        isEditing={!!editingSupplier}
+                        defaultValues={editingSupplier ? {
+                          name: editingSupplier.name,
+                          tax_id: editingSupplier.tax_id,
+                          category: editingSupplier.category,
+                          status: editingSupplier.status,
+                          contact_name: editingSupplier.contact_name,
+                          contact_email: editingSupplier.contact_email,
+                          contact_phone: editingSupplier.contact_phone,
+                          address: editingSupplier.address,
+                          rating: editingSupplier.rating,
+                          notes: editingSupplier.notes,
+                          payment_terms: editingSupplier.payment_terms,
+                        } : undefined}
                       />
                     </DialogContent>
                   </Dialog>
@@ -196,6 +248,14 @@ export default function Suppliers() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  onClick={() => handleEditSupplier(supplier)}
+                                  title="Editar fornecedor"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => {
                                     setSelectedSupplierId(supplier.id);
                                     setSelectedContractId(undefined);
@@ -208,6 +268,7 @@ export default function Suppliers() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => deleteSupplier.mutate(supplier.id)}
+                                  title="Excluir fornecedor"
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -234,7 +295,7 @@ export default function Suppliers() {
                     </CardTitle>
                     <CardDescription>Gestão de contratos com fornecedores</CardDescription>
                   </div>
-                  <Dialog open={contractDialogOpen} onOpenChange={setContractDialogOpen}>
+                  <Dialog open={contractDialogOpen} onOpenChange={handleContractDialogClose}>
                     <DialogTrigger asChild>
                       <Button disabled={!selectedProjectId || !suppliers?.length}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -243,13 +304,27 @@ export default function Suppliers() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Criar Contrato</DialogTitle>
+                        <DialogTitle>{editingContract ? "Editar Contrato" : "Criar Contrato"}</DialogTitle>
                       </DialogHeader>
                       <ContractForm
                         projectId={selectedProjectId || ""}
                         suppliers={suppliers || []}
-                        onSubmit={(data) => createContract.mutate(data)}
-                        onSuccess={() => setContractDialogOpen(false)}
+                        onSubmit={handleContractSubmit}
+                        onSuccess={() => handleContractDialogClose(false)}
+                        isEditing={!!editingContract}
+                        defaultValues={editingContract ? {
+                          supplier_id: editingContract.supplier_id,
+                          contract_number: editingContract.contract_number,
+                          description: editingContract.description,
+                          total_value: editingContract.total_value,
+                          currency: editingContract.currency,
+                          start_date: editingContract.start_date,
+                          end_date: editingContract.end_date,
+                          status: editingContract.status,
+                          payment_schedule: editingContract.payment_schedule,
+                          deliverables: editingContract.deliverables,
+                          notes: editingContract.notes,
+                        } : undefined}
                       />
                     </DialogContent>
                   </Dialog>
@@ -308,6 +383,14 @@ export default function Suppliers() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  onClick={() => handleEditContract(contract)}
+                                  title="Editar contrato"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => {
                                     setSelectedContractId(contract.id);
                                     setSelectedSupplierId(undefined);
@@ -320,6 +403,7 @@ export default function Suppliers() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => deleteContract.mutate(contract.id)}
+                                  title="Excluir contrato"
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
