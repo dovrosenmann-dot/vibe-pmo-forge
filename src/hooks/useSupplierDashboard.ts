@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface SupplierDashboardFilters {
+  supplierId?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 interface SupplierSummary {
   id: string;
   name: string;
@@ -16,9 +23,9 @@ interface SupplierSummary {
   deliveredQty: number;
 }
 
-export function useSupplierDashboard(projectId?: string) {
+export function useSupplierDashboard(projectId?: string, filters?: SupplierDashboardFilters) {
   const { data, isLoading } = useQuery({
-    queryKey: ["supplier_dashboard", projectId],
+    queryKey: ["supplier_dashboard", projectId, filters],
     queryFn: async () => {
       // Fetch suppliers
       let suppliersQuery = supabase
@@ -29,16 +36,38 @@ export function useSupplierDashboard(projectId?: string) {
         suppliersQuery = suppliersQuery.eq("project_id", projectId);
       }
       
+      if (filters?.supplierId) {
+        suppliersQuery = suppliersQuery.eq("id", filters.supplierId);
+      }
+      
+      if (filters?.status) {
+        suppliersQuery = suppliersQuery.eq("status", filters.status as "active" | "inactive" | "blocked" | "pending_approval");
+      }
+      
       const { data: suppliers, error: suppliersError } = await suppliersQuery;
       if (suppliersError) throw suppliersError;
+
+      const supplierIds = suppliers?.map(s => s.id) || [];
 
       // Fetch contracts
       let contractsQuery = supabase
         .from("supplier_contracts")
-        .select("supplier_id, status, total_value");
+        .select("supplier_id, status, total_value, start_date, end_date");
       
       if (projectId) {
         contractsQuery = contractsQuery.eq("project_id", projectId);
+      }
+      
+      if (supplierIds.length > 0) {
+        contractsQuery = contractsQuery.in("supplier_id", supplierIds);
+      }
+      
+      if (filters?.startDate) {
+        contractsQuery = contractsQuery.gte("start_date", filters.startDate);
+      }
+      
+      if (filters?.endDate) {
+        contractsQuery = contractsQuery.lte("end_date", filters.endDate);
       }
       
       const { data: contracts, error: contractsError } = await contractsQuery;
@@ -47,10 +76,22 @@ export function useSupplierDashboard(projectId?: string) {
       // Fetch transactions linked to suppliers
       let transactionsQuery = supabase
         .from("financial_transactions")
-        .select("supplier_id, amount, approval_status");
+        .select("supplier_id, amount, approval_status, transaction_date");
       
       if (projectId) {
         transactionsQuery = transactionsQuery.eq("project_id", projectId);
+      }
+      
+      if (supplierIds.length > 0) {
+        transactionsQuery = transactionsQuery.in("supplier_id", supplierIds);
+      }
+      
+      if (filters?.startDate) {
+        transactionsQuery = transactionsQuery.gte("transaction_date", filters.startDate);
+      }
+      
+      if (filters?.endDate) {
+        transactionsQuery = transactionsQuery.lte("transaction_date", filters.endDate);
       }
       
       const { data: transactions, error: transactionsError } = await transactionsQuery;
@@ -59,10 +100,22 @@ export function useSupplierDashboard(projectId?: string) {
       // Fetch deliveries linked to suppliers
       let deliveriesQuery = supabase
         .from("meal_deliveries")
-        .select("supplier_id, delivered_qty, status");
+        .select("supplier_id, delivered_qty, status, delivery_date_actual");
       
       if (projectId) {
         deliveriesQuery = deliveriesQuery.eq("project_id", projectId);
+      }
+      
+      if (supplierIds.length > 0) {
+        deliveriesQuery = deliveriesQuery.in("supplier_id", supplierIds);
+      }
+      
+      if (filters?.startDate) {
+        deliveriesQuery = deliveriesQuery.gte("delivery_date_actual", filters.startDate);
+      }
+      
+      if (filters?.endDate) {
+        deliveriesQuery = deliveriesQuery.lte("delivery_date_actual", filters.endDate);
       }
       
       const { data: deliveries, error: deliveriesError } = await deliveriesQuery;
