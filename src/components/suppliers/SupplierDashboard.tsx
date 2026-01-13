@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, FileText, DollarSign, Package, Star } from "lucide-react";
-import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Users, FileText, DollarSign, Package, Star, Filter, X } from "lucide-react";
+import { useSupplierDashboard, SupplierDashboardFilters } from "@/hooks/useSupplierDashboard";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface SupplierDashboardProps {
@@ -52,7 +57,15 @@ function RatingStars({ rating }: { rating: number | null }) {
 }
 
 export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
-  const { summaries, totals, isLoading } = useSupplierDashboard(projectId);
+  const [filters, setFilters] = useState<SupplierDashboardFilters>({});
+  const { suppliers } = useSuppliers(projectId);
+  const { summaries, totals, isLoading } = useSupplierDashboard(projectId, filters);
+
+  const hasActiveFilters = filters.supplierId || filters.status || filters.startDate || filters.endDate;
+
+  const clearFilters = () => {
+    setFilters({});
+  };
 
   if (isLoading) {
     return <div className="text-center py-8 text-muted-foreground">Carregando dashboard...</div>;
@@ -82,6 +95,82 @@ export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </CardTitle>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-1" />
+                Limpar filtros
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Fornecedor</label>
+              <Select
+                value={filters.supplierId || "all"}
+                onValueChange={(v) => setFilters(f => ({ ...f, supplierId: v === "all" ? undefined : v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os fornecedores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os fornecedores</SelectItem>
+                  {suppliers?.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select
+                value={filters.status || "all"}
+                onValueChange={(v) => setFilters(f => ({ ...f, status: v === "all" ? undefined : v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  {Object.entries(statusConfig).map(([value, config]) => (
+                    <SelectItem key={value} value={value}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Início</label>
+              <Input
+                type="date"
+                value={filters.startDate || ""}
+                onChange={(e) => setFilters(f => ({ ...f, startDate: e.target.value || undefined }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Fim</label>
+              <Input
+                type="date"
+                value={filters.endDate || ""}
+                onChange={(e) => setFilters(f => ({ ...f, endDate: e.target.value || undefined }))}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
