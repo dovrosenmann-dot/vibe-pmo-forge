@@ -29,6 +29,7 @@ interface SupplierFormProps {
   onSubmit: (data: { name: string; project_id: string; category: SupplierCategory; status: SupplierStatus } & Partial<Omit<SupplierFormData, 'name' | 'category' | 'status'>>) => void;
   onSuccess?: () => void;
   defaultValues?: Partial<SupplierFormData>;
+  isEditing?: boolean;
 }
 
 const categoryLabels: Record<SupplierCategory, string> = {
@@ -48,7 +49,7 @@ const statusLabels: Record<SupplierStatus, string> = {
   pending_approval: "Aguardando Aprovação",
 };
 
-export function SupplierForm({ projectId, onSubmit, onSuccess, defaultValues }: SupplierFormProps) {
+export function SupplierForm({ projectId, onSubmit, onSuccess, defaultValues, isEditing = false }: SupplierFormProps) {
   const form = useForm<SupplierFormData>({
     resolver: zodResolver(supplierSchema),
     defaultValues: {
@@ -249,7 +250,7 @@ export function SupplierForm({ projectId, onSubmit, onSuccess, defaultValues }: 
         />
 
         <div className="flex justify-end">
-          <Button type="submit">Salvar Fornecedor</Button>
+          <Button type="submit">{isEditing ? "Atualizar Fornecedor" : "Salvar Fornecedor"}</Button>
         </div>
       </form>
     </Form>

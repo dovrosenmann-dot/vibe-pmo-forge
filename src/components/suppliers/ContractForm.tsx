@@ -31,6 +31,7 @@ interface ContractFormProps {
   onSubmit: (data: { supplier_id: string; contract_number: string; start_date: string; end_date: string; project_id: string; total_value: number; currency: string; status: ContractStatus } & Partial<Omit<ContractFormData, 'supplier_id' | 'contract_number' | 'start_date' | 'end_date' | 'total_value' | 'currency' | 'status'>>) => void;
   onSuccess?: () => void;
   defaultValues?: Partial<ContractFormData>;
+  isEditing?: boolean;
 }
 
 const statusLabels: Record<ContractStatus, string> = {
@@ -41,7 +42,7 @@ const statusLabels: Record<ContractStatus, string> = {
   expired: "Expirado",
 };
 
-export function ContractForm({ projectId, suppliers, onSubmit, onSuccess, defaultValues }: ContractFormProps) {
+export function ContractForm({ projectId, suppliers, onSubmit, onSuccess, defaultValues, isEditing = false }: ContractFormProps) {
   const form = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
     defaultValues: {
@@ -273,7 +274,7 @@ export function ContractForm({ projectId, suppliers, onSubmit, onSuccess, defaul
         />
 
         <div className="flex justify-end">
-          <Button type="submit">Salvar Contrato</Button>
+          <Button type="submit">{isEditing ? "Atualizar Contrato" : "Salvar Contrato"}</Button>
         </div>
       </form>
     </Form>
