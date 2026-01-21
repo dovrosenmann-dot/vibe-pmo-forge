@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil, ClipboardList } from "lucide-react";
+import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil, ClipboardList, BarChart3 } from "lucide-react";
 import { useSuppliers, Supplier } from "@/hooks/useSuppliers";
 import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
@@ -15,6 +15,7 @@ import { ContractForm } from "@/components/suppliers/ContractForm";
 import { SupplierDashboard } from "@/components/suppliers/SupplierDashboard";
 import { DocumentUpload } from "@/components/suppliers/DocumentUpload";
 import { SupplierTraceabilityReport } from "@/components/suppliers/SupplierTraceabilityReport";
+import { SupplierPerformanceReport } from "@/components/suppliers/SupplierPerformanceReport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
@@ -55,6 +56,8 @@ export default function Suppliers() {
   const [editingContract, setEditingContract] = useState<any | null>(null);
   const [traceabilitySupplier, setTraceabilitySupplier] = useState<Supplier | null>(null);
   const [traceabilityOpen, setTraceabilityOpen] = useState(false);
+  const [performanceSupplier, setPerformanceSupplier] = useState<Supplier | null>(null);
+  const [performanceOpen, setPerformanceOpen] = useState(false);
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -248,6 +251,17 @@ export default function Suppliers() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setPerformanceSupplier(supplier);
+                                    setPerformanceOpen(true);
+                                  }}
+                                  title="Avaliação de desempenho"
+                                >
+                                  <BarChart3 className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -513,6 +527,17 @@ export default function Suppliers() {
           onOpenChange={setTraceabilityOpen}
           supplier={traceabilitySupplier}
         />
+
+        <Dialog open={performanceOpen} onOpenChange={setPerformanceOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Avaliação de Desempenho</DialogTitle>
+            </DialogHeader>
+            {performanceSupplier && (
+              <SupplierPerformanceReport supplier={performanceSupplier} />
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
