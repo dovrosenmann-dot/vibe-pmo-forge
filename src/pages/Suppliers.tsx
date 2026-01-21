@@ -7,13 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil } from "lucide-react";
+import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil, ClipboardList } from "lucide-react";
 import { useSuppliers, Supplier } from "@/hooks/useSuppliers";
 import { useSupplierContracts } from "@/hooks/useSupplierContracts";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import { ContractForm } from "@/components/suppliers/ContractForm";
 import { SupplierDashboard } from "@/components/suppliers/SupplierDashboard";
 import { DocumentUpload } from "@/components/suppliers/DocumentUpload";
+import { SupplierTraceabilityReport } from "@/components/suppliers/SupplierTraceabilityReport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +53,8 @@ export default function Suppliers() {
   const [selectedContractId, setSelectedContractId] = useState<string | undefined>(undefined);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [editingContract, setEditingContract] = useState<any | null>(null);
+  const [traceabilitySupplier, setTraceabilitySupplier] = useState<Supplier | null>(null);
+  const [traceabilityOpen, setTraceabilityOpen] = useState(false);
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
@@ -245,6 +248,17 @@ export default function Suppliers() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setTraceabilitySupplier(supplier);
+                                    setTraceabilityOpen(true);
+                                  }}
+                                  title="Relatório de rastreabilidade"
+                                >
+                                  <ClipboardList className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -493,6 +507,12 @@ export default function Suppliers() {
             )}
           </TabsContent>
         </Tabs>
+
+        <SupplierTraceabilityReport
+          open={traceabilityOpen}
+          onOpenChange={setTraceabilityOpen}
+          supplier={traceabilitySupplier}
+        />
       </main>
     </div>
   );
