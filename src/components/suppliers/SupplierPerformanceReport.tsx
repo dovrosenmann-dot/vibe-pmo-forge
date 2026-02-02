@@ -12,7 +12,8 @@ import {
   AlertCircle,
   Star,
   Package,
-  DollarSign
+  DollarSign,
+  RefreshCw
 } from "lucide-react";
 import { useSupplierPerformance } from "@/hooks/useSupplierPerformance";
 import { Supplier } from "@/hooks/useSuppliers";
@@ -110,7 +111,7 @@ function MetricRow({
 }
 
 export function SupplierPerformanceReport({ supplier }: SupplierPerformanceReportProps) {
-  const { data: metrics, isLoading } = useSupplierPerformance(supplier.id);
+  const { data: metrics, isLoading, isUpdatingRating } = useSupplierPerformance(supplier.id);
 
   if (isLoading) {
     return (
@@ -151,6 +152,8 @@ export function SupplierPerformanceReport({ supplier }: SupplierPerformanceRepor
     }).format(value);
   };
 
+  const starRating = Math.round(metrics.overallScore / 20);
+
   return (
     <div className="space-y-6">
       {/* Header with supplier info */}
@@ -159,13 +162,16 @@ export function SupplierPerformanceReport({ supplier }: SupplierPerformanceRepor
           <h2 className="text-xl font-semibold">{supplier.name}</h2>
           <p className="text-sm text-muted-foreground">Avaliação de Desempenho</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {isUpdatingRating && (
+            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 className={`h-5 w-5 ${
-                  star <= Math.round(metrics.overallScore / 20)
+                  star <= starRating
                     ? "fill-amber-400 text-amber-400"
                     : "text-muted-foreground/30"
                 }`}
@@ -176,6 +182,12 @@ export function SupplierPerformanceReport({ supplier }: SupplierPerformanceRepor
             {metrics.overallScore}
           </span>
         </div>
+      </div>
+
+      {/* Auto-update info */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+        <span>O rating ({starRating} estrelas) é atualizado automaticamente no banco de dados com base na pontuação calculada.</span>
       </div>
 
       <Separator />
