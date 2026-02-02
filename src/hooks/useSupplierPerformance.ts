@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 export interface SupplierPerformanceMetrics {
   deliveryScore: number;
@@ -20,8 +21,28 @@ export interface SupplierPerformanceMetrics {
   executionRate: number;
 }
 
+// Convert score (0-100) to star rating (1-5)
+function scoreToStarRating(score: number): number {
+  return Math.max(1, Math.min(5, Math.round(score / 20)));
+}
+
 export function useSupplierPerformance(supplierId: string | undefined) {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const updateRatingMutation = useMutation({
+    mutationFn: async ({ id, rating }: { id: string; rating: number }) => {
+      const { error } = await supabase
+        .from("suppliers")
+        .update({ rating })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+    },
+  });
+
+  const query = useQuery({
     queryKey: ["supplier_performance", supplierId],
     enabled: !!supplierId,
     queryFn: async () => {
@@ -148,4 +169,21 @@ export function useSupplierPerformance(supplierId: string | undefined) {
       return metrics;
     },
   });
+
+  // Auto-update rating when metrics change
+  useEffect(() => {
+    if (query.data && supplierId) {
+      const newRating = scoreToStarRating(query.data.overallScore);
+      // Only update if there's actual performance data
+      if (query.data.totalDeliveries > 0 || query.data.totalTransactions > 0) {
+        updateRatingMutation.mutate({ id: supplierId, rating: newRating });
+      }
+    }
+  }, [query.data?.overallScore, supplierId]);
+
+  return {
+    ...query,
+    updateRating: updateRatingMutation.mutate,
+    isUpdatingRating: updateRatingMutation.isPending,
+  };
 }
