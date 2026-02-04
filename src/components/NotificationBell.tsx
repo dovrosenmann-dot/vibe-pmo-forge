@@ -20,6 +20,10 @@ export const NotificationBell = () => {
         return <div className="w-2 h-2 bg-green-500 rounded-full" />;
       case 'transaction_rejected':
         return <div className="w-2 h-2 bg-red-500 rounded-full" />;
+      case 'contract_expiring':
+        return <div className="w-2 h-2 bg-amber-500 rounded-full" />;
+      case 'supplier_low_performance':
+        return <div className="w-2 h-2 bg-orange-500 rounded-full" />;
       default:
         return <div className="w-2 h-2 bg-blue-500 rounded-full" />;
     }
