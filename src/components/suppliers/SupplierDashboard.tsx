@@ -6,9 +6,10 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, DollarSign, Package, Star, Filter, X } from "lucide-react";
+import { Users, FileText, DollarSign, Package, Star, Filter, X, Bell, Loader2 } from "lucide-react";
 import { useSupplierDashboard, SupplierDashboardFilters } from "@/hooks/useSupplierDashboard";
 import { useSuppliers } from "@/hooks/useSuppliers";
+import { useSupplierAlerts } from "@/hooks/useSupplierAlerts";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface SupplierDashboardProps {
@@ -60,6 +61,7 @@ export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
   const [filters, setFilters] = useState<SupplierDashboardFilters>({});
   const { suppliers } = useSuppliers(projectId);
   const { summaries, totals, isLoading } = useSupplierDashboard(projectId, filters);
+  const { checkAlerts, isChecking } = useSupplierAlerts();
 
   const hasActiveFilters = filters.supplierId || filters.status || filters.startDate || filters.endDate;
 
@@ -95,6 +97,30 @@ export function SupplierDashboard({ projectId }: SupplierDashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Alert Check Button */}
+      <Card className="bg-muted/30 border-dashed">
+        <CardContent className="flex items-center justify-between py-4">
+          <div>
+            <h3 className="font-medium">Alertas Automáticos</h3>
+            <p className="text-sm text-muted-foreground">
+              Verifique contratos próximos do vencimento e fornecedores com baixo desempenho
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => checkAlerts({})}
+            disabled={isChecking}
+          >
+            {isChecking ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Bell className="h-4 w-4 mr-2" />
+            )}
+            Verificar Alertas
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <Card>
         <CardHeader className="pb-4">
