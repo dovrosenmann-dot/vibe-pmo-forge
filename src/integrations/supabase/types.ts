@@ -932,6 +932,80 @@ export type Database = {
         }
         Relationships: []
       }
+      project_risks: {
+        Row: {
+          category: Database["public"]["Enums"]["risk_category"]
+          contingency_plan: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          impact: Database["public"]["Enums"]["risk_impact"]
+          mitigation_plan: string | null
+          owner: string | null
+          probability: Database["public"]["Enums"]["risk_probability"]
+          project_id: string
+          resolved_at: string | null
+          source: Database["public"]["Enums"]["risk_source"]
+          source_reference_id: string | null
+          source_reference_type: string | null
+          status: Database["public"]["Enums"]["risk_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["risk_category"]
+          contingency_plan?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["risk_impact"]
+          mitigation_plan?: string | null
+          owner?: string | null
+          probability?: Database["public"]["Enums"]["risk_probability"]
+          project_id: string
+          resolved_at?: string | null
+          source?: Database["public"]["Enums"]["risk_source"]
+          source_reference_id?: string | null
+          source_reference_type?: string | null
+          status?: Database["public"]["Enums"]["risk_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["risk_category"]
+          contingency_plan?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["risk_impact"]
+          mitigation_plan?: string | null
+          owner?: string | null
+          probability?: Database["public"]["Enums"]["risk_probability"]
+          project_id?: string
+          resolved_at?: string | null
+          source?: Database["public"]["Enums"]["risk_source"]
+          source_reference_id?: string | null
+          source_reference_type?: string | null
+          status?: Database["public"]["Enums"]["risk_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budget_planned: number | null
@@ -1484,6 +1558,22 @@ export type Database = {
         | "scope"
         | "compliance"
         | "quality"
+      risk_category:
+        | "meal"
+        | "suppliers"
+        | "financial"
+        | "beneficiaries"
+        | "operational"
+        | "contextual"
+      risk_impact: "low" | "medium" | "high"
+      risk_probability: "low" | "medium" | "high"
+      risk_source: "manual" | "auto_meal" | "auto_supplier" | "auto_financial"
+      risk_status:
+        | "identified"
+        | "mitigating"
+        | "resolved"
+        | "accepted"
+        | "escalated"
       supplier_category:
         | "goods"
         | "services"
@@ -1693,6 +1783,24 @@ export const Constants = {
         "scope",
         "compliance",
         "quality",
+      ],
+      risk_category: [
+        "meal",
+        "suppliers",
+        "financial",
+        "beneficiaries",
+        "operational",
+        "contextual",
+      ],
+      risk_impact: ["low", "medium", "high"],
+      risk_probability: ["low", "medium", "high"],
+      risk_source: ["manual", "auto_meal", "auto_supplier", "auto_financial"],
+      risk_status: [
+        "identified",
+        "mitigating",
+        "resolved",
+        "accepted",
+        "escalated",
       ],
       supplier_category: [
         "goods",

@@ -10,6 +10,7 @@ import Projects from "./pages/Projects";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import ComingSoon from "./pages/ComingSoon";
+import Risks from "./pages/Risks";
 import NotFound from "./pages/NotFound";
 import Meal from "./pages/Meal";
 import Finance from "./pages/Finance";
@@ -38,7 +39,7 @@ const App = () => (
                     <Route path="/meal/:projectId" element={<Meal />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/financial" element={<Finance />} />
-                    <Route path="/risks" element={<ComingSoon title="Risk Management" subtitle="Identify, Track & Mitigate Risks" description="This module will enable comprehensive risk tracking and mitigation planning." />} />
+                    <Route path="/risks" element={<Risks />} />
                     <Route path="/suppliers" element={<Suppliers />} />
                     <Route path="/reports" element={<ComingSoon title="Reports & Analytics" subtitle="Dashboards & Insights" description="This module will provide comprehensive reporting and analytics capabilities." />} />
                     <Route path="/settings" element={<ComingSoon title="Settings" subtitle="System Configuration" description="Configure users, permissions, and system preferences." />} />
