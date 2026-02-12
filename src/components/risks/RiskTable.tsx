@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { ProjectRisk } from "@/hooks/useProjectRisks";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Bot } from "lucide-react";
+import { Edit, Trash2, Bot, History } from "lucide-react";
 import { format } from "date-fns";
+import { RiskAuditHistory } from "./RiskAuditHistory";
 
 interface RiskTableProps {
   risks: ProjectRisk[];
@@ -37,6 +39,8 @@ const sourceLabels: Record<string, string> = {
 };
 
 export const RiskTable = ({ risks, onEdit, onDelete }: RiskTableProps) => {
+  const [auditRisk, setAuditRisk] = useState<ProjectRisk | null>(null);
+
   if (risks.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -46,65 +50,79 @@ export const RiskTable = ({ risks, onEdit, onDelete }: RiskTableProps) => {
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead>Prob.</TableHead>
-            <TableHead>Impacto</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Origem</TableHead>
-            <TableHead>Responsável</TableHead>
-            <TableHead>Data Limite</TableHead>
-            <TableHead className="w-[90px]">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {risks.map((risk) => {
-            const statusInfo = statusLabels[risk.status] || { label: risk.status, variant: "outline" as const };
-            const isAuto = risk.source !== "manual";
-            return (
-              <TableRow key={risk.id}>
-                <TableCell className="font-medium max-w-[220px] truncate">
-                  <div className="flex items-center gap-1.5">
-                    {isAuto && <Bot className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
-                    <span className="truncate">{risk.title}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">{categoryLabels[risk.category]}</Badge>
-                </TableCell>
-                <TableCell className={`font-medium ${levelColors[risk.probability]}`}>
-                  {levelLabels[risk.probability]}
-                </TableCell>
-                <TableCell className={`font-medium ${levelColors[risk.impact]}`}>
-                  {levelLabels[risk.impact]}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{sourceLabels[risk.source]}</TableCell>
-                <TableCell className="text-sm">{risk.owner || "—"}</TableCell>
-                <TableCell className="text-sm">
-                  {risk.due_date ? format(new Date(risk.due_date), "dd/MM/yyyy") : "—"}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(risk)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(risk.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    <>
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Prob.</TableHead>
+              <TableHead>Impacto</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Origem</TableHead>
+              <TableHead>Responsável</TableHead>
+              <TableHead>Data Limite</TableHead>
+              <TableHead className="w-[120px]">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {risks.map((risk) => {
+              const statusInfo = statusLabels[risk.status] || { label: risk.status, variant: "outline" as const };
+              const isAuto = risk.source !== "manual";
+              return (
+                <TableRow key={risk.id}>
+                  <TableCell className="font-medium max-w-[220px] truncate">
+                    <div className="flex items-center gap-1.5">
+                      {isAuto && <Bot className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
+                      <span className="truncate">{risk.title}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">{categoryLabels[risk.category]}</Badge>
+                  </TableCell>
+                  <TableCell className={`font-medium ${levelColors[risk.probability]}`}>
+                    {levelLabels[risk.probability]}
+                  </TableCell>
+                  <TableCell className={`font-medium ${levelColors[risk.impact]}`}>
+                    {levelLabels[risk.impact]}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{sourceLabels[risk.source]}</TableCell>
+                  <TableCell className="text-sm">{risk.owner || "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {risk.due_date ? format(new Date(risk.due_date), "dd/MM/yyyy") : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setAuditRisk(risk)} title="Histórico">
+                        <History className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => onEdit(risk)}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => onDelete(risk.id)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      {auditRisk && (
+        <RiskAuditHistory
+          riskId={auditRisk.id}
+          riskTitle={auditRisk.title}
+          open={!!auditRisk}
+          onOpenChange={(open) => !open && setAuditRisk(null)}
+        />
+      )}
+    </>
   );
 };

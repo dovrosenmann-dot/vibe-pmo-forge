@@ -1133,6 +1133,59 @@ export type Database = {
           },
         ]
       }
+      risk_audit_log: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_impact: string | null
+          new_probability: string | null
+          new_status: string
+          previous_impact: string | null
+          previous_probability: string | null
+          previous_status: string | null
+          risk_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_impact?: string | null
+          new_probability?: string | null
+          new_status: string
+          previous_impact?: string | null
+          previous_probability?: string | null
+          previous_status?: string | null
+          risk_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_impact?: string | null
+          new_probability?: string | null
+          new_status?: string
+          previous_impact?: string | null
+          previous_probability?: string | null
+          previous_status?: string | null
+          risk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_audit_log_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "project_risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_contracts: {
         Row: {
           contract_number: string
