@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { StatCard } from "@/components/StatCard";
 import { ProjectCard } from "@/components/ProjectCard";
+import { DashboardRiskSummary } from "@/components/dashboard/DashboardRiskSummary";
 import { FolderKanban, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -111,7 +112,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-6">
+            <DashboardRiskSummary />
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
