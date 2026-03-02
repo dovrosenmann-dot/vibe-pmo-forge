@@ -1,1 +1,10 @@
 project_id = "suimhaxcauytoeeljnug"
+
+[functions.check-supplier-alerts]
+verify_jwt = false
+
+[functions.scan-project-risks]
+verify_jwt = false
+
+[functions.send-notification-email]
+verify_jwt = false
