@@ -16,21 +16,23 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navigate } from "react-router-dom";
 
 export default function Admin() {
-  const { users, isLoading, isAdmin, addRole, removeRole } = useRoles();
+  const { users, isLoading, isAdmin, currentUserRoles, addRole, removeRole } = useRoles();
 
-  if (!isAdmin && !isLoading) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (isLoading) {
+  // Show loading first to prevent UI flash before auth check completes
+  if (isLoading || currentUserRoles === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-muted-foreground">Verificando permissões...</p>
         </div>
       </div>
     );
+  }
+
+  // Only redirect after roles have been fully loaded (server-side verified via RLS)
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return (
