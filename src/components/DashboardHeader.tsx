@@ -9,27 +9,24 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
   return (
-    <header className="h-14 bg-background/95 backdrop-blur-[20px] border-b border-border px-6 flex items-center justify-between shrink-0">
-      <div className="flex items-center gap-3">
-        <h2 className="font-display font-[800] text-[20px] text-foreground">{title}</h2>
-        {subtitle && (
-          <>
-            <span className="text-muted-foreground text-[10px]">•</span>
-            <p className="text-[10px] text-muted-foreground tracking-wide">{subtitle}</p>
-          </>
-        )}
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input 
-            placeholder="Search projects, tasks..." 
-            className="pl-9 h-8 text-[12px] bg-secondary border-border"
-          />
+    <header className="bg-card border-b border-border px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         
-        <NotificationBell />
+        <div className="flex items-center gap-4">
+          <div className="relative w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search projects, tasks..." 
+              className="pl-10"
+            />
+          </div>
+          
+          <NotificationBell />
+        </div>
       </div>
     </header>
   );
