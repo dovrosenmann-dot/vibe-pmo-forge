@@ -90,18 +90,18 @@ const Dashboard = () => {
         subtitle="Monitor and manage your projects portfolio"
       />
       
-      <main className="flex-1 overflow-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <main className="flex-1 overflow-auto p-[32px_36px] space-y-6 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <StatCard key={stat.title} {...stat} />
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Active Projects</h3>
-              <a href="/projects" className="text-sm text-primary hover:underline">
+              <h3 className="font-display font-bold text-[14px] text-foreground">Active Projects</h3>
+              <a href="/projects" className="text-[11px] font-mono text-primary hover:underline">
                 View all →
               </a>
             </div>
@@ -112,7 +112,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             <DashboardRiskSummary />
             <Card>
               <CardHeader>
@@ -128,8 +128,8 @@ const Dashboard = () => {
                         'bg-primary'
                       }`} />
                       <div>
-                        <p className="text-sm text-foreground">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                        <p className="text-[12px] font-mono text-foreground">{activity.action}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground mt-1">{activity.time}</p>
                       </div>
                     </div>
                   ))}
