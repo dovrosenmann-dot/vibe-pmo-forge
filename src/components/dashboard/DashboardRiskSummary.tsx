@@ -39,11 +39,11 @@ const categoryLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  identified: "bg-muted text-muted-foreground",
-  mitigating: "bg-warning/15 text-warning border-warning/30",
-  escalated: "bg-destructive/15 text-destructive border-destructive/30",
+  identified: "bg-secondary text-muted-foreground",
+  mitigating: "status-pending",
+  escalated: "status-blocked",
   accepted: "bg-primary/15 text-primary border-primary/30",
-  resolved: "bg-success/15 text-success border-success/30",
+  resolved: "status-active",
 };
 
 export function DashboardRiskSummary() {
@@ -62,7 +62,6 @@ export function DashboardRiskSummary() {
     },
   });
 
-  // Group by project
   const grouped = risks.reduce<Record<string, { project: { name: string; code: string }; risks: RiskWithProject[] }>>(
     (acc, risk) => {
       const key = risk.project_id;
@@ -82,14 +81,14 @@ export function DashboardRiskSummary() {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldAlert className="h-5 w-5 text-destructive" />
+          <CardTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-destructive" />
             Riscos Críticos
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full rounded-md" />
+          <Skeleton className="h-16 w-full rounded-md" />
         </CardContent>
       </Card>
     );
@@ -99,23 +98,23 @@ export function DashboardRiskSummary() {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldAlert className="h-5 w-5 text-destructive" />
+          <CardTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-destructive" />
             Riscos Críticos
           </CardTitle>
           {risks.length > 0 && (
-            <Badge variant="destructive" className="text-xs">
+            <span className="inline-flex items-center rounded-full border px-[9px] py-[3px] text-[10px] font-mono tracking-[0.06em] status-blocked">
               {risks.length} {risks.length === 1 ? "risco" : "riscos"}
-            </Badge>
+            </span>
           )}
         </div>
       </CardHeader>
       <CardContent>
         {risks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-            <TrendingUp className="h-8 w-8 mb-2 text-success" />
-            <p className="text-sm font-medium">Nenhum risco crítico ativo</p>
-            <p className="text-xs mt-1">Todos os riscos de alta severidade estão controlados</p>
+            <TrendingUp className="h-6 w-6 mb-2 text-success" />
+            <p className="text-[12px] font-mono font-medium">Nenhum risco crítico ativo</p>
+            <p className="text-[10px] font-mono mt-1">Todos os riscos de alta severidade estão controlados</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -123,27 +122,27 @@ export function DashboardRiskSummary() {
               <div key={projectId} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                  <span className="text-sm font-semibold text-foreground">
+                  <span className="text-[12px] font-mono font-medium text-foreground">
                     {project.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">({project.code})</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">({project.code})</span>
                 </div>
                 <div className="space-y-1.5 pl-4 border-l-2 border-destructive/20">
                   {projectRisks.map((risk) => (
                     <div
                       key={risk.id}
-                      className="flex items-start justify-between gap-2 rounded-md bg-muted/50 px-3 py-2"
+                      className="flex items-start justify-between gap-2 rounded-md bg-secondary/50 px-3 py-2"
                     >
                       <div className="flex items-start gap-2 min-w-0">
-                        <AlertTriangle className="h-3.5 w-3.5 text-destructive mt-0.5 flex-shrink-0" />
+                        <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{risk.title}</p>
+                          <p className="text-[12px] font-mono font-medium text-foreground truncate">{risk.title}</p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-[10px] font-mono text-muted-foreground">
                               {categoryLabels[risk.category] || risk.category}
                             </span>
-                            <span className="text-xs text-muted-foreground">•</span>
-                            <span className="text-xs text-destructive font-medium">
+                            <span className="text-[10px] text-muted-foreground">•</span>
+                            <span className="text-[10px] font-mono text-destructive font-medium">
                               P: {risk.probability === "high" ? "Alta" : "Média"} / I: {risk.impact === "high" ? "Alto" : "Médio"}
                             </span>
                           </div>
@@ -151,7 +150,7 @@ export function DashboardRiskSummary() {
                       </div>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] flex-shrink-0 ${statusColors[risk.status] || ""}`}
+                        className={`text-[9px] flex-shrink-0 ${statusColors[risk.status] || ""}`}
                       >
                         {statusLabels[risk.status] || risk.status}
                       </Badge>
@@ -162,7 +161,7 @@ export function DashboardRiskSummary() {
             ))}
             <a
               href="/risks"
-              className="block text-xs text-primary hover:underline text-center pt-2"
+              className="block text-[11px] font-mono text-primary hover:underline text-center pt-2"
             >
               Ver todos os riscos →
             </a>
