@@ -24,38 +24,31 @@ export const useRoles = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ["users-with-roles"],
     queryFn: async () => {
-      // Fetch all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, user_id, full_name")
+        .select("id, user_id, full_name, email")
         .order("full_name");
 
       if (profilesError) throw profilesError;
 
-      // Fetch all user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select("*");
 
       if (rolesError) throw rolesError;
 
-      // Get user emails from auth.users via RPC or metadata
-      const usersWithRoles: UserWithRoles[] = await Promise.all(
-        profiles.map(async (profile) => {
-          const { data: { user } } = await supabase.auth.admin.getUserById(profile.user_id);
-          
-          const roles = userRoles
-            .filter(r => r.user_id === profile.user_id)
-            .map(r => r.role as AppRole);
+      const usersWithRoles: UserWithRoles[] = profiles.map((profile) => {
+        const roles = userRoles
+          .filter(r => r.user_id === profile.user_id)
+          .map(r => r.role as AppRole);
 
-          return {
-            id: profile.user_id,
-            email: user?.email || "",
-            full_name: profile.full_name,
-            roles,
-          };
-        })
-      );
+        return {
+          id: profile.user_id,
+          email: profile.email || "",
+          full_name: profile.full_name,
+          roles,
+        };
+      });
 
       return usersWithRoles;
     },
