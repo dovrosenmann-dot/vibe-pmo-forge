@@ -1,0 +1,12 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "suppliers": "Suppliers",
+    "finance": "Finance",
+    "settings": "Settings",
+    "admin": "Admin",
+    "logout": "Logout",
+    "title": "Settings"
+  }
+}

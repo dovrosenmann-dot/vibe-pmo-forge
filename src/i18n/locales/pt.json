@@ -1,0 +1,12 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "projects": "Projetos",
+    "suppliers": "Fornecedores",
+    "finance": "Financeiro",
+    "settings": "Configurações",
+    "admin": "Admin",
+    "logout": "Sair",
+    "title": "Configurações"
+  }
+}

@@ -1,4 +1,5 @@
-import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Building2, FileText, Settings, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, FolderKanban, TrendingUp, DollarSign, AlertTriangle, Building2, FileText, Settings, LogOut, Shield, FileSearch } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
@@ -19,19 +20,22 @@ export const Sidebar = () => {
       .slice(0, 2);
   };
 
+  const { t } = useTranslation();
+
   const navItems = [
-    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/projects", icon: FolderKanban, label: "Portfolio" },
+    { to: "/", icon: LayoutDashboard, label: t("sidebar.dashboard") },
+    { to: "/projects", icon: FolderKanban, label: t("sidebar.projects") },
     { to: "/meal", icon: TrendingUp, label: "MEAL" },
-    { to: "/financial", icon: DollarSign, label: "Financial" },
+    { to: "/financial", icon: DollarSign, label: t("sidebar.finance") },
     { to: "/risks", icon: AlertTriangle, label: "Risks" },
-    { to: "/suppliers", icon: Building2, label: "Fornecedores" },
+    { to: "/suppliers", icon: Building2, label: t("sidebar.suppliers") },
     { to: "/reports", icon: FileText, label: "Reports" },
-    { to: "/settings", icon: Settings, label: "Settings" },
+    { to: "/settings", icon: Settings, label: t("sidebar.settings") },
   ];
 
   const adminNavItems = [
-    { to: "/admin", icon: Shield, label: "Administração" },
+    { to: "/admin", icon: Shield, label: t("sidebar.admin") },
+    { to: "/audit", icon: FileSearch, label: "Auditoria" },
   ];
 
   return (
@@ -102,7 +106,7 @@ export const Sidebar = () => {
           className="w-full justify-start gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
         >
           <LogOut className="w-4 h-4" />
-          Sair
+          {t("sidebar.logout")}
         </Button>
       </div>
     </aside>

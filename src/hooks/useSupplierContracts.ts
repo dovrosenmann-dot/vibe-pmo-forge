@@ -6,6 +6,9 @@ import { Tables, TablesInsert } from "@/integrations/supabase/types";
 export type SupplierContract = Tables<"supplier_contracts">;
 export type SupplierContractInsert = TablesInsert<"supplier_contracts">;
 export type ContractStatus = "draft" | "active" | "completed" | "cancelled" | "expired";
+export type SupplierContractWithDetails = SupplierContract & {
+  supplier?: { id: string; name: string; category: string } | null;
+};
 
 export function useSupplierContracts(projectId?: string, supplierId?: string) {
   const queryClient = useQueryClient();

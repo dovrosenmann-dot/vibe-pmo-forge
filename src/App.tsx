@@ -2,9 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@/i18n/config";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AppStoreProvider } from "./store/useAppStore";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Auth from "./pages/Auth";
@@ -14,6 +17,7 @@ import Risks from "./pages/Risks";
 import NotFound from "./pages/NotFound";
 import Meal from "./pages/Meal";
 import Finance from "./pages/Finance";
+import AuditLogs from "./pages/AuditLogs";
 import Suppliers from "./pages/Suppliers";
 
 const queryClient = new QueryClient();
@@ -23,7 +27,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <AppStoreProvider>
+      <ErrorBoundary>
+        <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route
@@ -37,7 +43,8 @@ const App = () => (
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/meal" element={<Meal />} />
                     <Route path="/meal/:projectId" element={<Meal />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/audit" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
                     <Route path="/financial" element={<Finance />} />
                     <Route path="/risks" element={<Risks />} />
                     <Route path="/suppliers" element={<Suppliers />} />
@@ -51,6 +58,8 @@ const App = () => (
           />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
+      </AppStoreProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

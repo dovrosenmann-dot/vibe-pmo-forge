@@ -7,53 +7,34 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil, ClipboardList, BarChart3 } from "lucide-react";
+import { Plus, Building2, FileText, Star, Trash2, Paperclip, Pencil, ClipboardList, BarChart3, Download, FileSpreadsheet } from "lucide-react";
 import { useSuppliers, Supplier } from "@/hooks/useSuppliers";
-import { useSupplierContracts } from "@/hooks/useSupplierContracts";
+import { useSupplierContracts, SupplierContractWithDetails, SupplierContractInsert } from "@/hooks/useSupplierContracts";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import { ContractForm } from "@/components/suppliers/ContractForm";
+import { useAppStore } from "@/store/useAppStore";
+import { Authorize } from "@/components/Authorize";
 import { SupplierDashboard } from "@/components/suppliers/SupplierDashboard";
+import { SupplierList } from "@/components/suppliers/SupplierList";
+import { SupplierContractsList } from "@/components/suppliers/SupplierContractsList";
 import { DocumentUpload } from "@/components/suppliers/DocumentUpload";
 import { SupplierTraceabilityReport } from "@/components/suppliers/SupplierTraceabilityReport";
 import { SupplierPerformanceReport } from "@/components/suppliers/SupplierPerformanceReport";
+import { exportToPDF, exportToExcel } from "@/utils/exportUtils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-const categoryLabels: Record<string, string> = {
-  goods: "Bens",
-  services: "Serviços",
-  logistics: "Logística",
-  consulting: "Consultoria",
-  construction: "Construção",
-  equipment: "Equipamentos",
-  other: "Outros",
-};
-
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  active: { label: "Ativo", variant: "default" },
-  inactive: { label: "Inativo", variant: "secondary" },
-  blocked: { label: "Bloqueado", variant: "destructive" },
-  pending_approval: { label: "Pendente", variant: "outline" },
-};
-
-const contractStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Rascunho", variant: "secondary" },
-  active: { label: "Ativo", variant: "default" },
-  completed: { label: "Concluído", variant: "outline" },
-  cancelled: { label: "Cancelado", variant: "destructive" },
-  expired: { label: "Expirado", variant: "secondary" },
-};
+import { ProjectService } from "@/services/projectService";
 
 export default function Suppliers() {
-  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
+  const { selectedProjectId, setSelectedProjectId } = useAppStore();
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [contractDialogOpen, setContractDialogOpen] = useState(false);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | undefined>(undefined);
   const [selectedContractId, setSelectedContractId] = useState<string | undefined>(undefined);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-  const [editingContract, setEditingContract] = useState<any | null>(null);
+  const [editingContract, setEditingContract] = useState<SupplierContractWithDetails | null>(null);
   const [traceabilitySupplier, setTraceabilitySupplier] = useState<Supplier | null>(null);
   const [traceabilityOpen, setTraceabilityOpen] = useState(false);
   const [performanceSupplier, setPerformanceSupplier] = useState<Supplier | null>(null);
@@ -61,11 +42,7 @@ export default function Suppliers() {
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("projects").select("id, name, code").order("name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => ProjectService.getProjectsBasics(),
   });
 
   const { suppliers, isLoading: suppliersLoading, createSupplier, updateSupplier, deleteSupplier } = useSuppliers(selectedProjectId);
@@ -86,7 +63,7 @@ export default function Suppliers() {
     setSupplierDialogOpen(true);
   };
 
-  const handleEditContract = (contract: any) => {
+  const handleEditContract = (contract: SupplierContractWithDetails) => {
     setEditingContract(contract);
     setContractDialogOpen(true);
   };
@@ -99,7 +76,7 @@ export default function Suppliers() {
     }
   };
 
-  const handleContractSubmit = (data: any) => {
+  const handleContractSubmit = (data: Omit<SupplierContractInsert, "id" | "created_at" | "updated_at">) => {
     if (editingContract) {
       updateContract.mutate({ id: editingContract.id, ...data });
     } else {
@@ -107,10 +84,38 @@ export default function Suppliers() {
     }
   };
 
+  const handleExportPDF = () => {
+    if (!suppliers) return;
+    const columns = ["Nome", "CNPJ", "Categoria", "Status", "Aval.", "Contato"];
+    const data = suppliers.map(s => [
+      s.name,
+      s.tax_id || "-",
+      s.category,
+      s.status,
+      s.rating?.toString() || "-",
+      s.contact_email || "-"
+    ]);
+    exportToPDF("Relatório de Fornecedores", columns, data, "fornecedores_ef");
+  };
+
+  const handleExportExcel = () => {
+    if (!suppliers) return;
+    const data = suppliers.map(s => ({
+      "Nome": s.name,
+      "CNPJ": s.tax_id,
+      "Categoria": s.category,
+      "Status": s.status,
+      "Avaliação": s.rating,
+      "Email de Contato": s.contact_email,
+      "Telefone": s.contact_phone
+    }));
+    exportToExcel(data, "fornecedores_ef");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader title="Gestão de Fornecedores" />
-      
+
       <main className="container mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Gestão de Fornecedores</h1>
@@ -162,14 +167,24 @@ export default function Suppliers() {
                     </CardTitle>
                     <CardDescription>Cadastro de fornecedores do projeto</CardDescription>
                   </div>
-                  <Dialog open={supplierDialogOpen} onOpenChange={handleSupplierDialogClose}>
-                    <DialogTrigger asChild>
-                      <Button disabled={!selectedProjectId}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Novo Fornecedor
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleExportExcel} disabled={!suppliers?.length}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
+                      Excel
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={!suppliers?.length}>
+                      <Download className="mr-2 h-4 w-4 text-red-600" />
+                      PDF
+                    </Button>
+                    <Authorize roles={["admin", "pmo", "project_manager", "finance"]}>
+                      <Dialog open={supplierDialogOpen} onOpenChange={handleSupplierDialogClose}>
+                        <DialogTrigger asChild>
+                          <Button disabled={!selectedProjectId}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Novo Fornecedor
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>{editingSupplier ? "Editar Fornecedor" : "Cadastrar Fornecedor"}</DialogTitle>
                       </DialogHeader>
@@ -194,6 +209,8 @@ export default function Suppliers() {
                       />
                     </DialogContent>
                   </Dialog>
+                  </Authorize>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -201,112 +218,16 @@ export default function Suppliers() {
                   <p className="text-center py-8 text-muted-foreground">
                     Selecione um projeto para visualizar os fornecedores
                   </p>
-                ) : suppliersLoading ? (
-                  <p className="text-center py-8 text-muted-foreground">Carregando...</p>
-                ) : !suppliers?.length ? (
-                  <p className="text-center py-8 text-muted-foreground">
-                    Nenhum fornecedor cadastrado
-                  </p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>CNPJ/CPF</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Contato</TableHead>
-                        <TableHead>Avaliação</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {suppliers.map((supplier) => {
-                        const status = statusConfig[supplier.status] || { label: supplier.status, variant: "secondary" as const };
-                        return (
-                          <TableRow key={supplier.id}>
-                            <TableCell className="font-medium">{supplier.name}</TableCell>
-                            <TableCell>{supplier.tax_id || "-"}</TableCell>
-                            <TableCell>{categoryLabels[supplier.category] || supplier.category}</TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {supplier.contact_name && <div>{supplier.contact_name}</div>}
-                                {supplier.contact_email && (
-                                  <div className="text-muted-foreground">{supplier.contact_email}</div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {supplier.rating ? (
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                                  <span>{supplier.rating}</span>
-                                </div>
-                              ) : (
-                                "-"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={status.variant}>{status.label}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setPerformanceSupplier(supplier);
-                                    setPerformanceOpen(true);
-                                  }}
-                                  title="Avaliação de desempenho"
-                                >
-                                  <BarChart3 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setTraceabilitySupplier(supplier);
-                                    setTraceabilityOpen(true);
-                                  }}
-                                  title="Relatório de rastreabilidade"
-                                >
-                                  <ClipboardList className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEditSupplier(supplier)}
-                                  title="Editar fornecedor"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedSupplierId(supplier.id);
-                                    setSelectedContractId(undefined);
-                                  }}
-                                  title="Ver documentos"
-                                >
-                                  <Paperclip className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => deleteSupplier.mutate(supplier.id)}
-                                  title="Excluir fornecedor"
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  <SupplierList 
+                    suppliers={suppliers} 
+                    isLoading={suppliersLoading} 
+                    onEdit={handleEditSupplier}
+                    onDelete={(id) => deleteSupplier.mutate(id)}
+                    onTraceability={(supplier) => { setTraceabilitySupplier(supplier); setTraceabilityOpen(true); }}
+                    onPerformance={(supplier) => { setPerformanceSupplier(supplier); setPerformanceOpen(true); }}
+                    onViewDocuments={(id) => { setSelectedSupplierId(id); setSelectedContractId(undefined); }}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -323,14 +244,15 @@ export default function Suppliers() {
                     </CardTitle>
                     <CardDescription>Gestão de contratos com fornecedores</CardDescription>
                   </div>
-                  <Dialog open={contractDialogOpen} onOpenChange={handleContractDialogClose}>
-                    <DialogTrigger asChild>
-                      <Button disabled={!selectedProjectId || !suppliers?.length}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Novo Contrato
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <Authorize roles={["admin", "pmo", "project_manager", "finance"]}>
+                    <Dialog open={contractDialogOpen} onOpenChange={handleContractDialogClose}>
+                      <DialogTrigger asChild>
+                        <Button disabled={!selectedProjectId || !suppliers?.length}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Novo Contrato
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>{editingContract ? "Editar Contrato" : "Criar Contrato"}</DialogTitle>
                       </DialogHeader>
@@ -356,6 +278,7 @@ export default function Suppliers() {
                       />
                     </DialogContent>
                   </Dialog>
+                  </Authorize>
                 </div>
               </CardHeader>
               <CardContent>
@@ -363,85 +286,14 @@ export default function Suppliers() {
                   <p className="text-center py-8 text-muted-foreground">
                     Selecione um projeto para visualizar os contratos
                   </p>
-                ) : contractsLoading ? (
-                  <p className="text-center py-8 text-muted-foreground">Carregando...</p>
-                ) : !contracts?.length ? (
-                  <p className="text-center py-8 text-muted-foreground">
-                    Nenhum contrato cadastrado
-                  </p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nº Contrato</TableHead>
-                        <TableHead>Fornecedor</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead>Vigência</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {contracts.map((contract: any) => {
-                        const status = contractStatusConfig[contract.status] || { label: contract.status, variant: "secondary" as const };
-                        return (
-                          <TableRow key={contract.id}>
-                            <TableCell className="font-medium">{contract.contract_number}</TableCell>
-                            <TableCell>{contract.supplier?.name || "-"}</TableCell>
-                            <TableCell className="max-w-[200px] truncate">
-                              {contract.description || "-"}
-                            </TableCell>
-                            <TableCell>
-                              {contract.currency} {contract.total_value.toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                <div>{format(new Date(contract.start_date), "dd/MM/yyyy", { locale: ptBR })}</div>
-                                <div className="text-muted-foreground">
-                                  até {format(new Date(contract.end_date), "dd/MM/yyyy", { locale: ptBR })}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={status.variant}>{status.label}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEditContract(contract)}
-                                  title="Editar contrato"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedContractId(contract.id);
-                                    setSelectedSupplierId(undefined);
-                                  }}
-                                  title="Ver documentos"
-                                >
-                                  <Paperclip className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => deleteContract.mutate(contract.id)}
-                                  title="Excluir contrato"
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  <SupplierContractsList 
+                    contracts={contracts} 
+                    isLoading={contractsLoading}
+                    onEdit={handleEditContract}
+                    onDelete={(id) => deleteContract.mutate(id)}
+                    onViewDocuments={(id) => { setSelectedContractId(id); setSelectedSupplierId(undefined); }}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -495,7 +347,7 @@ export default function Suppliers() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos os contratos</SelectItem>
-                        {contracts?.map((contract: any) => (
+                        {contracts?.map((contract: SupplierContractWithDetails) => (
                           <SelectItem key={contract.id} value={contract.id}>
                             {contract.contract_number} - {contract.supplier?.name}
                           </SelectItem>
@@ -513,7 +365,7 @@ export default function Suppliers() {
                     selectedSupplierId
                       ? `Documentos do Fornecedor: ${suppliers?.find((s) => s.id === selectedSupplierId)?.name}`
                       : selectedContractId
-                      ? `Documentos do Contrato: ${contracts?.find((c: any) => c.id === selectedContractId)?.contract_number}`
+                      ? `Documentos do Contrato: ${contracts?.find((c: SupplierContractWithDetails) => c.id === selectedContractId)?.contract_number}`
                       : "Todos os Documentos"
                   }
                 />

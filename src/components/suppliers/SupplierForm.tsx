@@ -7,6 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SupplierCategory, SupplierStatus } from "@/hooks/useSuppliers";
+import { AIParserService } from "@/services/aiParserService";
+import React, { useState, useRef } from "react";
+import { Sparkles, Loader2, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 const supplierSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -50,6 +54,9 @@ const statusLabels: Record<SupplierStatus, string> = {
 };
 
 export function SupplierForm({ projectId, onSubmit, onSuccess, defaultValues, isEditing = false }: SupplierFormProps) {
+  const [isParsing, setIsParsing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<SupplierFormData>({
     resolver: zodResolver(supplierSchema),
     defaultValues: {
@@ -86,9 +93,65 @@ export function SupplierForm({ projectId, onSubmit, onSuccess, defaultValues, is
     onSuccess?.();
   };
 
+  const handleAIParse = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    try {
+      const extractedData = await AIParserService.parseSupplierDocument(file);
+      Object.keys(extractedData).forEach(key => {
+        form.setValue(key as any, extractedData[key] as string, { shouldValidate: true, shouldDirty: true });
+      });
+      toast.success("Documento analisado. Formulário preenchido pela IA!");
+    } catch (error) {
+      toast.error("Falha ao analisar o documento via IA.");
+      console.error("AI Parsing failed:", error);
+    } finally {
+      setIsParsing(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {!isEditing && (
+          <div className="mb-4 p-5 bg-primary/5 rounded-xl border border-primary/20 flex flex-col items-center justify-center text-center gap-3">
+             <div className="w-12 h-12 rounded-full bg-primary/20 shadow-inner flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+             </div>
+             <div>
+               <h4 className="text-sm font-bold text-foreground">Preenchimento Mágico por IA</h4>
+               <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                 Faça o upload do Cartão CNPJ, Contrato ou Fatura. A Inteligência Artificial irá extrair todos os metadados do documento e digitar para você.
+               </p>
+             </div>
+             <div>
+               <Input 
+                 type="file" 
+                 className="hidden" 
+                 ref={fileInputRef} 
+                 accept=".pdf,image/*" 
+                 onChange={handleAIParse} 
+               />
+               <Button 
+                 type="button" 
+                 variant="secondary" 
+                 className="mt-3 text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-all font-semibold"
+                 disabled={isParsing}
+                 onClick={() => fileInputRef.current?.click()}
+               >
+                 {isParsing ? (
+                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analisando Documento...</>
+                 ) : (
+                   <><Upload className="w-4 h-4 mr-2" /> Extrair de PDF / Imagem</>
+                 )}
+               </Button>
+             </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
