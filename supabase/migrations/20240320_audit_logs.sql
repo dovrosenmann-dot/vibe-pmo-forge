@@ -28,20 +28,25 @@ CREATE OR REPLACE FUNCTION process_audit_log() RETURNS TRIGGER AS $$
 BEGIN
   IF (TG_OP = 'DELETE') THEN
     INSERT INTO audit_logs (table_name, record_id, action, old_data, changed_by)
-    VALUES (TG_TABLE_NAME, OLD.id, TG_OP, row_to_json(OLD), auth.uid());
+    VALUES (TG_TABLE_NAME, OLD.id, TG_OP, to_jsonb(OLD), auth.uid());
     RETURN OLD;
   ELSIF (TG_OP = 'UPDATE') THEN
+    -- Ignore updates where data didn't actually change
+    IF (OLD IS NOT DISTINCT FROM NEW) THEN
+      RETURN NEW;
+    END IF;
+
     INSERT INTO audit_logs (table_name, record_id, action, old_data, new_data, changed_by)
-    VALUES (TG_TABLE_NAME, NEW.id, TG_OP, row_to_json(OLD), row_to_json(NEW), auth.uid());
+    VALUES (TG_TABLE_NAME, NEW.id, TG_OP, to_jsonb(OLD), to_jsonb(NEW), auth.uid());
     RETURN NEW;
   ELSIF (TG_OP = 'INSERT') THEN
     INSERT INTO audit_logs (table_name, record_id, action, new_data, changed_by)
-    VALUES (TG_TABLE_NAME, NEW.id, TG_OP, row_to_json(NEW), auth.uid());
+    VALUES (TG_TABLE_NAME, NEW.id, TG_OP, to_jsonb(NEW), auth.uid());
     RETURN NEW;
   END IF;
   RETURN NULL;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 5. Attach the trigger to critical tables
 DROP TRIGGER IF EXISTS audit_projects_trigger ON projects;
