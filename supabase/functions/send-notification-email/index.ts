@@ -9,18 +9,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface NotificationRequest {
-  to: string;
-  userName: string;
-  notificationType: "role" | "project_access" | "transaction_approved" | "transaction_rejected";
-  roleName?: string;
-  projectName?: string;
-  projectCode?: string;
-  transactionDescription?: string;
-  transactionAmount?: number;
-  transactionCurrency?: string;
-  rejectionReason?: string;
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
 }
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
+}
+
+function validateString(value: unknown, maxLength = 500): string {
+  if (typeof value !== "string") return "";
+  return value.slice(0, maxLength);
+}
+
+const VALID_NOTIFICATION_TYPES = ["role", "project_access", "transaction_approved", "transaction_rejected"] as const;
+type NotificationType = typeof VALID_NOTIFICATION_TYPES[number];
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -53,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const userId = claimsData.claims.sub;
 
-    // Verify caller is admin (only admins should send notification emails)
+    // Verify caller is admin/pmo/finance
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -69,12 +79,33 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // --- Business logic ---
-    const { 
-      to, userName, notificationType, roleName, projectName, projectCode,
-      transactionDescription, transactionAmount, transactionCurrency, rejectionReason
-    }: NotificationRequest = await req.json();
+    // --- Input validation ---
+    const body = await req.json();
 
+    const to = validateString(body.to, 255);
+    if (!validateEmail(to)) {
+      return new Response(JSON.stringify({ error: "Invalid email address" }), {
+        status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const notificationType = validateString(body.notificationType, 50);
+    if (!VALID_NOTIFICATION_TYPES.includes(notificationType as NotificationType)) {
+      return new Response(JSON.stringify({ error: "Invalid notification type" }), {
+        status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const userName = escapeHtml(validateString(body.userName, 200));
+    const roleName = escapeHtml(validateString(body.roleName, 100));
+    const projectName = escapeHtml(validateString(body.projectName, 200));
+    const projectCode = escapeHtml(validateString(body.projectCode, 50));
+    const transactionDescription = escapeHtml(validateString(body.transactionDescription, 500));
+    const rejectionReason = escapeHtml(validateString(body.rejectionReason, 500));
+    const transactionAmount = typeof body.transactionAmount === "number" ? body.transactionAmount : 0;
+    const transactionCurrency = validateString(body.transactionCurrency, 10) || "USD";
+
+    // --- Build email ---
     let subject = "";
     let html = "";
 
@@ -97,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p>Atenciosamente,<br>Equipe de Administração</p>
       `;
     } else if (notificationType === "transaction_approved") {
-      const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: transactionCurrency || 'USD' }).format(transactionAmount || 0);
+      const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: transactionCurrency }).format(transactionAmount);
       subject = "Transação aprovada";
       html = `
         <h1>Olá, ${userName}!</h1>
@@ -110,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p>Atenciosamente,<br>Equipe Financeira</p>
       `;
     } else if (notificationType === "transaction_rejected") {
-      const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: transactionCurrency || 'USD' }).format(transactionAmount || 0);
+      const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: transactionCurrency }).format(transactionAmount);
       subject = "Transação rejeitada";
       html = `
         <h1>Olá, ${userName}!</h1>
@@ -138,14 +169,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailData = await emailResponse.json();
-    console.log("Email enviado com sucesso:", emailData);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (error: any) {
-    console.error("Erro ao enviar email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error sending email:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500, headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
