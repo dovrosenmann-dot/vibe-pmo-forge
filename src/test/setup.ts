@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 // Mock ResizeObserver for Recharts / Radix UI
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+(globalThis as Record<string, unknown>).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
