@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
@@ -43,12 +43,23 @@ export function FinanceExport({
     return "Todos os períodos";
   };
 
-  const exportToExcel = () => {
-    try {
-      const wb = XLSX.utils.book_new();
+  const addSheetFromData = (workbook: ExcelJS.Workbook, sheetName: string, data: Record<string, any>[]) => {
+    const worksheet = workbook.addWorksheet(sheetName);
+    if (data.length > 0) {
+      worksheet.columns = Object.keys(data[0]).map(key => ({
+        header: key,
+        key,
+        width: 20
+      }));
+      data.forEach(row => worksheet.addRow(row));
+    }
+  };
 
-      // Grants sheet
-      const grantsData = grants.map((g) => ({
+  const exportToExcel = async () => {
+    try {
+      const wb = new ExcelJS.Workbook();
+
+      addSheetFromData(wb, "Grants", grants.map((g) => ({
         Código: g.grant_code,
         Doador: g.donor_name,
         "Valor Total": g.total_amount,
@@ -57,12 +68,9 @@ export function FinanceExport({
         "Data Fim": formatDate(g.end_date),
         Status: g.status,
         "Valor Desembolsado": g.disbursed_amount,
-      }));
-      const wsGrants = XLSX.utils.json_to_sheet(grantsData);
-      XLSX.utils.book_append_sheet(wb, wsGrants, "Grants");
+      })));
 
-      // Allocations sheet
-      const allocationsData = allocations.map((a) => ({
+      addSheetFromData(wb, "Alocações", allocations.map((a) => ({
         Categoria: a.category,
         "Ano Fiscal": a.fiscal_year,
         Trimestre: a.quarter || "-",
@@ -71,12 +79,9 @@ export function FinanceExport({
         "Valor Comprometido": a.committed_amount,
         Moeda: a.currency,
         Restante: a.allocated_amount - a.spent_amount,
-      }));
-      const wsAllocations = XLSX.utils.json_to_sheet(allocationsData);
-      XLSX.utils.book_append_sheet(wb, wsAllocations, "Alocações");
+      })));
 
-      // Transactions sheet
-      const transactionsData = transactions.map((t) => ({
+      addSheetFromData(wb, "Transações", transactions.map((t) => ({
         Data: formatDate(t.transaction_date),
         Tipo: t.transaction_type,
         Descrição: t.description,
@@ -84,12 +89,17 @@ export function FinanceExport({
         Moeda: t.currency,
         Referência: t.reference_number || "-",
         Categoria: t.category || "-",
-      }));
-      const wsTransactions = XLSX.utils.json_to_sheet(transactionsData);
-      XLSX.utils.book_append_sheet(wb, wsTransactions, "Transações");
+      })));
 
-      const fileName = `relatorio_financeiro_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio_financeiro_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+
       toast.success("Relatório Excel exportado com sucesso!");
     } catch (error) {
       toast.error("Erro ao exportar para Excel");
