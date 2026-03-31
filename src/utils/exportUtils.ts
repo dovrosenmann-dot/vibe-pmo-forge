@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export const exportToPDF = (title: string, columns: string[], data: any[][], filename: string) => {
   const doc = new jsPDF();
@@ -29,21 +29,37 @@ export const exportToPDF = (title: string, columns: string[], data: any[][], fil
       lineWidth: 0.1
     },
     headStyles: { 
-      fillColor: [15, 23, 42], // Deep Slate styling to match UI
+      fillColor: [15, 23, 42],
       textColor: 255,
       fontStyle: 'bold'
     },
     alternateRowStyles: { 
-      fillColor: [248, 250, 252] // Very light slate mapping
+      fillColor: [248, 250, 252]
     }
   });
   
   doc.save(`${filename}.pdf`);
 };
 
-export const exportToExcel = (data: Record<string, any>[], filename: string) => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Registros");
-  XLSX.writeFile(workbook, `${filename}.xlsx`);
+export const exportToExcel = async (data: Record<string, any>[], filename: string) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Registros");
+  
+  if (data.length > 0) {
+    worksheet.columns = Object.keys(data[0]).map(key => ({
+      header: key,
+      key,
+      width: 20
+    }));
+    data.forEach(row => worksheet.addRow(row));
+  }
+  
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
 };
