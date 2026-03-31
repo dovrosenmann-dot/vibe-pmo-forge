@@ -13,7 +13,7 @@ export default function AuditLogs() {
     queryKey: ["audit-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("audit_logs")
+        .from("transaction_audit_log")
         .select(`*, profiles:changed_by(full_name, email)`)
         .order("created_at", { ascending: false })
         .limit(100);
