@@ -232,6 +232,71 @@ export function FinanceExport({
     }
   };
 
+  const escapeCSV = (value: any): string => {
+    const str = String(value ?? "");
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const arrayToCSV = (headers: string[], rows: string[][]): string => {
+    const headerLine = headers.map(escapeCSV).join(",");
+    const dataLines = rows.map(row => row.map(escapeCSV).join(","));
+    return [headerLine, ...dataLines].join("\n");
+  };
+
+  const exportToCSV = () => {
+    try {
+      const sections: string[] = [];
+
+      // Grants
+      if (grants.length > 0) {
+        const headers = ["Código", "Doador", "Valor Total", "Moeda", "Data Início", "Data Fim", "Status", "Valor Desembolsado"];
+        const rows = grants.map(g => [
+          g.grant_code, g.donor_name, String(g.total_amount), g.currency,
+          formatDate(g.start_date), formatDate(g.end_date), g.status, String(g.disbursed_amount),
+        ]);
+        sections.push("--- Grants ---\n" + arrayToCSV(headers, rows));
+      }
+
+      // Allocations
+      if (allocations.length > 0) {
+        const headers = ["Categoria", "Ano Fiscal", "Trimestre", "Valor Alocado", "Valor Gasto", "Valor Comprometido", "Moeda", "Restante"];
+        const rows = allocations.map(a => [
+          a.category, String(a.fiscal_year), a.quarter ? String(a.quarter) : "-",
+          String(a.allocated_amount), String(a.spent_amount), String(a.committed_amount),
+          a.currency, String(a.allocated_amount - a.spent_amount),
+        ]);
+        sections.push("--- Alocações ---\n" + arrayToCSV(headers, rows));
+      }
+
+      // Transactions
+      if (transactions.length > 0) {
+        const headers = ["Data", "Tipo", "Descrição", "Valor", "Moeda", "Referência", "Categoria"];
+        const rows = transactions.map(t => [
+          formatDate(t.transaction_date), t.transaction_type, t.description,
+          String(t.amount), t.currency, t.reference_number || "-", t.category || "-",
+        ]);
+        sections.push("--- Transações ---\n" + arrayToCSV(headers, rows));
+      }
+
+      const csvContent = sections.join("\n\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `relatorio_financeiro_${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success("Relatório CSV exportado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao exportar para CSV");
+      console.error(error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -248,6 +313,10 @@ export function FinanceExport({
         <DropdownMenuItem onClick={exportToPDF}>
           <FileText className="mr-2 h-4 w-4" />
           Exportar PDF
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={exportToCSV}>
+          <FileDown className="mr-2 h-4 w-4" />
+          Exportar CSV
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
