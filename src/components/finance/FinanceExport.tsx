@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
