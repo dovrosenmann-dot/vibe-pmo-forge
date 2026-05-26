@@ -83,7 +83,7 @@ export const useProjectAccess = (userId?: string) => {
       toast.success("Acesso ao projeto concedido");
     },
     onError: (error: any) => {
-      toast.error("Erro ao conceder acesso: " + error.message);
+      toast.error("Erro ao conceder acesso. Tente novamente.");
     },
   });
 
@@ -102,7 +102,7 @@ export const useProjectAccess = (userId?: string) => {
       toast.success("Acesso ao projeto revogado");
     },
     onError: (error: any) => {
-      toast.error("Erro ao revogar acesso: " + error.message);
+      toast.error("Erro ao revogar acesso. Tente novamente.");
     },
   });
 

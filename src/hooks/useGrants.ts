@@ -59,7 +59,7 @@ export function useGrants(projectId?: string) {
       toast.success("Grant criado com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao criar grant: " + error.message);
+      toast.error("Erro ao criar grant. Tente novamente.");
     },
   });
 
@@ -80,7 +80,7 @@ export function useGrants(projectId?: string) {
       toast.success("Grant atualizado com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao atualizar grant: " + error.message);
+      toast.error("Erro ao atualizar grant. Tente novamente.");
     },
   });
 
@@ -98,7 +98,7 @@ export function useGrants(projectId?: string) {
       toast.success("Grant removido com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao remover grant: " + error.message);
+      toast.error("Erro ao remover grant. Tente novamente.");
     },
   });
 

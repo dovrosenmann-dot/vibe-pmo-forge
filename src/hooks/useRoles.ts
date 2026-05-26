@@ -99,7 +99,7 @@ export const useRoles = () => {
       toast.success("Role adicionado com sucesso");
     },
     onError: (error: any) => {
-      toast.error("Erro ao adicionar role: " + error.message);
+      toast.error("Erro ao adicionar role. Tente novamente.");
     },
   });
 
@@ -118,7 +118,7 @@ export const useRoles = () => {
       toast.success("Role removido com sucesso");
     },
     onError: (error: any) => {
-      toast.error("Erro ao remover role: " + error.message);
+      toast.error("Erro ao remover role. Tente novamente.");
     },
   });
 

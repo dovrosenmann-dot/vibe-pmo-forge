@@ -52,7 +52,7 @@ export function useSupplierContracts(projectId?: string, supplierId?: string) {
       toast({ title: "Contrato criado com sucesso" });
     },
     onError: (error) => {
-      toast({ title: "Erro ao criar contrato", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar contrato", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
@@ -72,7 +72,7 @@ export function useSupplierContracts(projectId?: string, supplierId?: string) {
       toast({ title: "Contrato atualizado com sucesso" });
     },
     onError: (error) => {
-      toast({ title: "Erro ao atualizar contrato", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao atualizar contrato", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
@@ -86,7 +86,7 @@ export function useSupplierContracts(projectId?: string, supplierId?: string) {
       toast({ title: "Contrato excluído com sucesso" });
     },
     onError: (error) => {
-      toast({ title: "Erro ao excluir contrato", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao excluir contrato", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
