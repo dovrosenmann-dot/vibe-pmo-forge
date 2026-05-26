@@ -43,7 +43,7 @@ export const useBeneficiaries = (projectId: string) => {
       toast.success("Beneficiário cadastrado com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao cadastrar beneficiário: " + error.message);
+      toast.error("Erro ao cadastrar beneficiário. Tente novamente.");
     },
   });
 
@@ -64,7 +64,7 @@ export const useBeneficiaries = (projectId: string) => {
       toast.success("Beneficiário atualizado com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao atualizar beneficiário: " + error.message);
+      toast.error("Erro ao atualizar beneficiário. Tente novamente.");
     },
   });
 
@@ -82,7 +82,7 @@ export const useBeneficiaries = (projectId: string) => {
       toast.success("Beneficiário removido com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao remover beneficiário: " + error.message);
+      toast.error("Erro ao remover beneficiário. Tente novamente.");
     },
   });
 

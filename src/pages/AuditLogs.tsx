@@ -52,8 +52,8 @@ export default function AuditLogs() {
           <CardContent>
             {error ? (
               <div className="p-4 bg-destructive/10 text-destructive rounded-md border border-destructive/20">
-                <p className="font-semibold">Erro ao carregar logs.</p>
-                <p className="text-sm">Você já executou o script SQL (supabase/migrations/20240320_audit_logs.sql) no seu banco de dados Supabase?</p>
+                <p className="font-semibold">Erro ao carregar logs de auditoria.</p>
+                <p className="text-sm">Por favor, contate o administrador do sistema.</p>
               </div>
             ) : isLoading ? (
               <p className="text-center py-8 text-muted-foreground">Carregando auditoria...</p>

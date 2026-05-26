@@ -103,7 +103,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       toast.success("Transação registrada com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao registrar transação: " + error.message);
+      toast.error("Erro ao registrar transação. Tente novamente.");
     },
   });
 
@@ -124,7 +124,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       toast.success("Transação atualizada com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao atualizar transação: " + error.message);
+      toast.error("Erro ao atualizar transação. Tente novamente.");
     },
   });
 
@@ -189,7 +189,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       toast.success("Transação aprovada com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao aprovar transação: " + error.message);
+      toast.error("Erro ao aprovar transação. Tente novamente.");
     },
   });
 
@@ -256,7 +256,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       toast.success("Transação rejeitada");
     },
     onError: (error) => {
-      toast.error("Erro ao rejeitar transação: " + error.message);
+      toast.error("Erro ao rejeitar transação. Tente novamente.");
     },
   });
 
@@ -274,7 +274,7 @@ export function useFinancialTransactions(projectId?: string, filters?: {
       toast.success("Transação removida com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao remover transação: " + error.message);
+      toast.error("Erro ao remover transação. Tente novamente.");
     },
   });
 

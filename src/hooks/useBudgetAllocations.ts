@@ -67,7 +67,7 @@ export function useBudgetAllocations(projectId?: string) {
       toast.success("Alocação de orçamento criada com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao criar alocação: " + error.message);
+      toast.error("Erro ao criar alocação. Tente novamente.");
     },
   });
 
@@ -88,7 +88,7 @@ export function useBudgetAllocations(projectId?: string) {
       toast.success("Alocação atualizada com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao atualizar alocação: " + error.message);
+      toast.error("Erro ao atualizar alocação. Tente novamente.");
     },
   });
 
@@ -106,7 +106,7 @@ export function useBudgetAllocations(projectId?: string) {
       toast.success("Alocação removida com sucesso");
     },
     onError: (error) => {
-      toast.error("Erro ao remover alocação: " + error.message);
+      toast.error("Erro ao remover alocação. Tente novamente.");
     },
   });
 

@@ -42,7 +42,7 @@ export function useSupplierAlerts() {
       console.error("Error checking alerts:", error);
       toast({
         title: "Erro ao verificar alertas",
-        description: error.message || "Ocorreu um erro ao verificar os alertas.",
+        description: "Ocorreu um erro ao verificar os alertas.",
         variant: "destructive",
       });
     },

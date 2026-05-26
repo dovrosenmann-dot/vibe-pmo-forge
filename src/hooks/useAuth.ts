@@ -82,7 +82,7 @@ export const useAuth = () => {
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error("Não foi possível concluir a operação. Verifique seus dados e tente novamente.");
       return { error };
     }
 
@@ -110,7 +110,7 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signOut();
     
     if (error) {
-      toast.error(error.message);
+      toast.error("Não foi possível concluir a operação. Verifique seus dados e tente novamente.");
       return { error };
     }
 

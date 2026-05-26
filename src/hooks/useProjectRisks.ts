@@ -78,7 +78,7 @@ export function useProjectRisks(projectId?: string, filters?: RiskFilters) {
       toast({ title: "Risco criado com sucesso" });
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao criar risco", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar risco", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
@@ -98,7 +98,7 @@ export function useProjectRisks(projectId?: string, filters?: RiskFilters) {
       toast({ title: "Risco atualizado" });
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao atualizar risco", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao atualizar risco", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
@@ -112,7 +112,7 @@ export function useProjectRisks(projectId?: string, filters?: RiskFilters) {
       toast({ title: "Risco removido" });
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao remover risco", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao remover risco", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 

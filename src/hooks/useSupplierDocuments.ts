@@ -110,7 +110,7 @@ export function useSupplierDocuments(projectId?: string, supplierId?: string, co
       toast({ title: "Documento enviado com sucesso" });
     },
     onError: (error) => {
-      toast({ title: "Erro ao enviar documento", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao enviar documento", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
@@ -136,7 +136,7 @@ export function useSupplierDocuments(projectId?: string, supplierId?: string, co
       toast({ title: "Documento excluído com sucesso" });
     },
     onError: (error) => {
-      toast({ title: "Erro ao excluir documento", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao excluir documento", description: "Não foi possível concluir a operação. Tente novamente.", variant: "destructive" });
     },
   });
 
